@@ -20,6 +20,10 @@ See docs/process.md for more on how version tagging works.
 
 Current Trunk
 -------------
+- The version of musl libc used by emscripten was upgraded from v1.1.15 to
+  v1.2.2 (#13006).  There could be some minor size regressions (or gains)
+  due to changes in upstream musl code be we don't expect anything major.
+
 2.0.18: 04/23/2021
 ------------------
 - The `makeBigInt` function was removed from the emscripten runtime since it

@@ -631,6 +631,7 @@ def process_dynamic_libs(dylibs):
         continue
       new_exports.append(imp.field)
     logger.debug('Adding exports based on `%s`: %s', dylib, new_exports)
+    settings.SIDE_MODULE_IMPORTS = new_exports
     settings.EXPORTED_FUNCTIONS.extend(shared.asmjs_mangle(e) for e in new_exports)
     settings.DEFAULT_LIBRARY_FUNCS_TO_INCLUDE.extend(new_exports)
 
@@ -1336,7 +1337,7 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
       exit_with_error('no input files')
 
     # Note the exports the user requested
-    building.user_requested_exports = settings.EXPORTED_FUNCTIONS.copy()
+    building.user_requested_exports.update(settings.EXPORTED_FUNCTIONS)
 
     def default_setting(name, new_default):
       if name not in settings_map:
@@ -1439,7 +1440,7 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
       settings.RELOCATABLE = 1
 
     if settings.MAIN_MODULE:
-      settings.DEFAULT_LIBRARY_FUNCS_TO_INCLUDE += ['$getDylinkMetadata']
+      settings.DEFAULT_LIBRARY_FUNCS_TO_INCLUDE += ['$getDylinkMetadata', '$mergeLibSymbols']
 
     if settings.RELOCATABLE:
       settings.DEFAULT_LIBRARY_FUNCS_TO_INCLUDE += [
@@ -1729,8 +1730,8 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
       # kept alive through DCE.
       # TODO: Find a less hacky way to do this, perhaps by also scanning worker.js
       # for roots.
-      building.user_requested_exports.append('_emscripten_tls_init')
-      building.user_requested_exports.append('_emscripten_current_thread_process_queued_calls')
+      building.user_requested_exports.add('_emscripten_tls_init')
+      building.user_requested_exports.add('_emscripten_current_thread_process_queued_calls')
 
       # set location of worker.js
       settings.PTHREAD_WORKER_FILE = unsuffixed(os.path.basename(target)) + '.worker.js'

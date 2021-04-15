@@ -658,6 +658,7 @@ def process_dynamic_libs(dylibs):
         continue
       new_exports.append(imp.field)
     logger.debug('Adding exports based on `%s`: %s', dylib, new_exports)
+    settings.SIDE_MODULE_IMPORTS = new_exports
     settings.EXPORTED_FUNCTIONS.extend(shared.asmjs_mangle(e) for e in new_exports)
     settings.DEFAULT_LIBRARY_FUNCS_TO_INCLUDE.extend(new_exports)
     building.user_requested_exports.update(shared.asmjs_mangle(e) for e in new_exports)
@@ -1432,7 +1433,7 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
       settings.RELOCATABLE = 1
 
     if settings.MAIN_MODULE:
-      settings.DEFAULT_LIBRARY_FUNCS_TO_INCLUDE += ['$getDylinkMetadata']
+      settings.DEFAULT_LIBRARY_FUNCS_TO_INCLUDE += ['$getDylinkMetadata', '$mergeLibSymbols']
 
     if settings.RELOCATABLE:
       settings.DEFAULT_LIBRARY_FUNCS_TO_INCLUDE += [

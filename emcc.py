@@ -1628,7 +1628,7 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
     if settings.SIDE_MODULE and settings.GLOBAL_BASE != -1:
       exit_with_error('Cannot set GLOBAL_BASE when building SIDE_MODULE')
 
-    if settings.RELOCATABLE or settings.LINKABLE:
+    if settings.SIDE_MODULE:
       default_setting('ERROR_ON_UNDEFINED_SYMBOLS', 0)
       default_setting('WARN_ON_UNDEFINED_SYMBOLS', 0)
 
@@ -1768,7 +1768,7 @@ There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR P
       settings.EXPORTED_FUNCTIONS += ['_memalign']
 
       if settings.MINIMAL_RUNTIME:
-        building.user_requested_exports += ['exit']
+        building.user_requested_exports.add('exit')
 
       if settings.PROXY_TO_PTHREAD:
         settings.EXPORTED_FUNCTIONS += ['_emscripten_proxy_main']

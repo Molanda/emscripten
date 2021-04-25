@@ -1707,6 +1707,292 @@ namespace emscripten {
 
     namespace internal {
         template<typename VectorType>
+        struct VectorArrayValue {
+            VectorArrayValue()
+                : value(val::undefined())
+                , done(true) {}
+
+            ~VectorArrayValue() {}
+
+            val value;
+            bool done;
+        };
+
+        template<typename VectorType>
+        class VectorArrayIterator {
+        public:
+            VectorArrayIterator(const VectorType& v)
+                : vp(&v)
+                , index(0) {}
+
+            ~VectorArrayIterator() {}
+
+            const VectorArrayValue<VectorType> next() {
+                VectorArrayValue<VectorType> vav;
+                if (index < (ssize_t)vp->size()) {
+                    vav.value = val(vp->at(index));
+                    vav.done = false;
+                    index += 1;
+                }
+                return vav;
+            }
+
+        private:
+            const VectorType* vp;
+            ssize_t index;
+        };
+
+        template<typename VectorType>
+        struct VectorArrayAccess {
+            static VectorType concat(
+                const VectorType& v
+            ) {
+                VectorType vn;
+                vn.reserve(v.size());
+                vn.insert(vn.end(), v.begin(), v.end());
+                return vn;
+            }
+
+            static VectorType concat(
+                const VectorType& v,
+                const VectorType& v0
+            ) {
+                VectorType vn;
+                vn.reserve(v.size() + v0.size());
+                vn.insert(vn.end(), v.begin(), v.end());
+                vn.insert(vn.end(), v0.begin(), v0.end());
+                return vn;
+            }
+
+            static VectorType& fill(
+                VectorType& v,
+                const typename VectorType::value_type& value
+            ) {
+                return fill(v, value, 0, -1);
+            }
+
+            static VectorType& fill(
+                VectorType& v,
+                const typename VectorType::value_type& value,
+                ssize_t start
+            ) {
+                return fill(v, value, start, -1);
+            }
+
+            static VectorType& fill(
+                VectorType& v,
+                const typename VectorType::value_type& value,
+                ssize_t start,
+                ssize_t end
+            ) {
+                if (start < 0) {
+                    start += (ssize_t)v.size();
+                    if (start < 0) {
+                        start = 0;
+                    }
+                }
+                if (end < 0) {
+                    end += (ssize_t)v.size();
+                }
+                if (end >= (ssize_t)v.size()) {
+                    end = (ssize_t)v.size() - 1;
+                }
+                std::fill(v.begin() + start, v.begin() + end + 1, value);
+                return v;
+            }
+
+            static val get(
+                const VectorType& v,
+                ssize_t index
+            ) {
+                if (index < 0) {
+                    index += (ssize_t)v.size();
+                }
+                if (index >= 0 && index < v.size()) {
+                    return val(v[index]);
+                } else {
+                    return val::undefined();
+                }
+            }
+
+            static std::string join(
+                const VectorType& v
+            ) {
+                return join(v, ",");
+            }
+
+            static std::string join(
+                const VectorType& v,
+                const std::string& separator
+            ) {
+                std::string s;
+                if (v.size() > 0) {
+                    s += val(v[0]).call<std::string>("toString");
+                    for (ssize_t i = 1; i<(ssize_t)v.size(); ++i) {
+                        s += separator;
+                        s += val(v[i]).call<std::string>("toString");
+                    }
+                }
+                return s;
+            }
+
+            static val pop(
+                VectorType& v
+            ) {
+                if (v.size() > 0) {
+                    val e = val(v.back());
+                    v.pop_back();
+                    return e;
+                } else {
+                    return val::undefined();
+                }
+            }
+
+            static size_t push(
+                VectorType& v,
+                const typename VectorType::value_type& value
+            ) {
+                v.push_back(value);
+                return (size_t)v.size();
+            }
+
+            static VectorType& reverse(
+                VectorType& v
+            ) {
+                std::reverse(v.begin(), v.end());
+                return v;
+            }
+
+            static bool set(
+                VectorType& v,
+                ssize_t index,
+                const typename VectorType::value_type& value
+            ) {
+                if (index < 0) {
+                    index += (ssize_t)v.size();
+                }
+                if (index >= 0 && index < v.size()) {
+                    v[index] = value;
+                    return true;
+                }
+                return false;
+            }
+
+            static val shift(
+                VectorType& v
+            ) {
+                if (v.size() > 0) {
+                    std::rotate(v.begin(), v.begin() + 1, v.end());
+                    val e = val(v.back());
+                    v.pop_back();
+                    return e;
+                } else {
+                    return val::undefined();
+                }
+            }
+
+            static VectorType slice(
+                const VectorType& v
+            ) {
+                return slice(v, 0, (ssize_t)v.size());
+            }
+
+            static VectorType slice(
+                const VectorType& v,
+                ssize_t start
+            ) {
+                return slice(v, start, (ssize_t)v.size());
+            }
+
+            static VectorType slice(
+                const VectorType& v,
+                ssize_t start,
+                ssize_t end
+            ) {
+                if (start < 0) {
+                    start += (ssize_t)v.size();
+                    if (start < 0) {
+                        start = 0;
+                    }
+                }
+                if (end < 0) {
+                    end += (ssize_t)v.size();
+                }
+                if (end > (ssize_t)v.size()) {
+                    end = (ssize_t)v.size();
+                }
+                VectorType vn;
+                if (end > start) {
+                    vn.reserve(end - start);
+                    vn.insert(vn.end(), v.begin() + start, v.begin() + end);
+                }
+                return vn;
+            }
+
+            static size_t unshift(
+                VectorType& v,
+                const typename VectorType::value_type& value
+            ) {
+                v.push_back(value);
+                std::rotate(v.rbegin(), v.rbegin() + 1, v.rend());
+                return (size_t)v.size();
+            }
+
+            static VectorArrayIterator<VectorType> values(
+                VectorType& v
+            ) {
+                return VectorArrayIterator<VectorType>(v);
+            }
+        };
+    }
+
+    template<typename T>
+    class_<std::vector<T>> vector(const char* vecName, const char* iterName, const char* valName) {
+        typedef std::vector<T> VecType;
+
+        value_object<internal::VectorArrayValue<VecType>>(valName)
+            .field("value", &internal::VectorArrayValue<VecType>::value)
+            .field("done", &internal::VectorArrayValue<VecType>::done)
+            ;
+
+        class_<internal::VectorArrayIterator<VecType>>(iterName)
+            .function("next", &internal::VectorArrayIterator<VecType>::next)
+            ;
+
+        size_t (VecType::*length)() const = &VecType::size;
+        void (VecType::*resize)(const size_t, const T&) = &VecType::resize;
+        return class_<VecType>(vecName)
+            .template constructor<>()
+            .property("length", length)
+            .function("concat", select_overload<VecType(const VecType&)>(&internal::VectorArrayAccess<VecType>::concat))
+            .function("concat", select_overload<VecType(const VecType&, const VecType&)>(&internal::VectorArrayAccess<VecType>::concat))
+            .function("fill", select_overload<VecType&(VecType&, const T&)>(&internal::VectorArrayAccess<VecType>::fill))
+            .function("fill", select_overload<VecType&(VecType&, const T&, ssize_t)>(&internal::VectorArrayAccess<VecType>::fill))
+            .function("fill", select_overload<VecType&(VecType&, const T&, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::fill))
+            .function("get", &internal::VectorArrayAccess<VecType>::get)
+            .function("join", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::join))
+            .function("join", select_overload<std::string(const VecType&, const std::string&)>(&internal::VectorArrayAccess<VecType>::join))
+            .function("pop", &internal::VectorArrayAccess<VecType>::pop)
+            .function("push", &internal::VectorArrayAccess<VecType>::push)
+            .function("resize", resize)
+            .function("reverse", &internal::VectorArrayAccess<VecType>::reverse)
+            .function("set", &internal::VectorArrayAccess<VecType>::set)
+            .function("shift", &internal::VectorArrayAccess<VecType>::shift)
+            .function("slice", select_overload<VecType(const VecType&)>(&internal::VectorArrayAccess<VecType>::slice))
+            .function("slice", select_overload<VecType(const VecType&, ssize_t)>(&internal::VectorArrayAccess<VecType>::slice))
+            .function("slice", select_overload<VecType(const VecType&, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::slice))
+            .function("toString", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::join))
+            .function("unshift", &internal::VectorArrayAccess<VecType>::unshift)
+            .function("values", &internal::VectorArrayAccess<VecType>::values)
+            ;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // VECTORS
+    ////////////////////////////////////////////////////////////////////////////////
+
+    namespace internal {
+        template<typename VectorType>
         struct VectorAccess {
             static val get(
                 const VectorType& v,

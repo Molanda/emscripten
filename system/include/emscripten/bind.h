@@ -1721,16 +1721,23 @@ namespace emscripten {
         template<typename VectorType>
         class VectorArrayIterator {
         public:
-            VectorArrayIterator(const VectorType& v)
+            VectorArrayIterator(const VectorType& v, bool kvp)
                 : vp(&v)
-                , index(0) {}
+                , index(0)
+                , kvp(kvp) {}
 
             ~VectorArrayIterator() {}
 
             const VectorArrayValue<VectorType> next() {
                 VectorArrayValue<VectorType> vav;
                 if (index < (ssize_t)vp->size()) {
-                    vav.value = val(vp->at(index));
+                    if (kvp) {
+                      vav.value = val::array();
+                      vav.value.set(val(0), val(index));
+                      vav.value.set(val(1), val(vp->at(index)));
+                    } else {
+                      vav.value = val(vp->at(index));
+                    }
                     vav.done = false;
                     index += 1;
                 }
@@ -1740,6 +1747,7 @@ namespace emscripten {
         private:
             const VectorType* vp;
             ssize_t index;
+            bool kvp;
         };
 
         template<typename VectorType>
@@ -1762,6 +1770,12 @@ namespace emscripten {
                 vn.insert(vn.end(), v.begin(), v.end());
                 vn.insert(vn.end(), v0.begin(), v0.end());
                 return vn;
+            }
+
+            static VectorArrayIterator<VectorType> entries(
+                VectorType& v
+            ) {
+                return VectorArrayIterator<VectorType>(v, true);
             }
 
             static VectorType& fill(
@@ -1941,7 +1955,7 @@ namespace emscripten {
             static VectorArrayIterator<VectorType> values(
                 VectorType& v
             ) {
-                return VectorArrayIterator<VectorType>(v);
+                return VectorArrayIterator<VectorType>(v, false);
             }
         };
     }
@@ -1966,6 +1980,7 @@ namespace emscripten {
             .property("length", length)
             .function("concat", select_overload<VecType(const VecType&)>(&internal::VectorArrayAccess<VecType>::concat))
             .function("concat", select_overload<VecType(const VecType&, const VecType&)>(&internal::VectorArrayAccess<VecType>::concat))
+            .function("entries", &internal::VectorArrayAccess<VecType>::entries)
             .function("fill", select_overload<VecType&(VecType&, const T&)>(&internal::VectorArrayAccess<VecType>::fill))
             .function("fill", select_overload<VecType&(VecType&, const T&, ssize_t)>(&internal::VectorArrayAccess<VecType>::fill))
             .function("fill", select_overload<VecType&(VecType&, const T&, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::fill))

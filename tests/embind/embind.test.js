@@ -1252,6 +1252,21 @@ module({
             vec5.delete();
         });
 
+        test("entries", function() {
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(2);
+            vec.push(3);
+            const it = vec.entries();
+            [[[0, 1], false], [[1, 2], false], [[2, 3], false], [undefined, true]].forEach(e => {
+                const v = it.next();
+                assert.deepEqual(e[0], v.value);
+                assert.equal(e[1], v.done);
+            });
+            it.delete();
+            vec.delete();
+        });
+
         test("values", function() {
             const vec = new cm.DoubleVector();
             vec.push(1);

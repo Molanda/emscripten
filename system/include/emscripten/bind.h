@@ -1815,6 +1815,24 @@ namespace emscripten {
                 return v;
             }
 
+            static void forEach(
+                VectorType& v,
+                const val& callbackFn
+            ) {
+                forEach(v, callbackFn, val::undefined());
+            }
+
+            static void forEach(
+                VectorType& v,
+                const val& callbackFn,
+                const val& thisArg
+            ) {
+                ssize_t size = (ssize_t)v.size();
+                for (ssize_t i = 0; i<size; ++i) {
+                    callbackFn.call<void>("call", thisArg, v[i], i, v);
+                }
+            }
+
             static val get(
                 const VectorType& v,
                 ssize_t index
@@ -1842,7 +1860,8 @@ namespace emscripten {
                 std::string s;
                 if (v.size() > 0) {
                     s += val(v[0]).call<std::string>("toString");
-                    for (ssize_t i = 1; i<(ssize_t)v.size(); ++i) {
+                    ssize_t size = (ssize_t)v.size();
+                    for (ssize_t i = 1; i<size; ++i) {
                         s += separator;
                         s += val(v[i]).call<std::string>("toString");
                     }
@@ -1984,6 +2003,8 @@ namespace emscripten {
             .function("fill", select_overload<VecType&(VecType&, const T&)>(&internal::VectorArrayAccess<VecType>::fill))
             .function("fill", select_overload<VecType&(VecType&, const T&, ssize_t)>(&internal::VectorArrayAccess<VecType>::fill))
             .function("fill", select_overload<VecType&(VecType&, const T&, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::fill))
+            .function("forEach", select_overload<void(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::forEach))
+            .function("forEach", select_overload<void(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::forEach))
             .function("get", &internal::VectorArrayAccess<VecType>::get)
             .function("join", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::join))
             .function("join", select_overload<std::string(const VecType&, const std::string&)>(&internal::VectorArrayAccess<VecType>::join))

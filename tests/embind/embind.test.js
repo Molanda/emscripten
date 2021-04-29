@@ -1181,21 +1181,21 @@ module({
             vec.push(2);
             vec.push(3);
             vec.push(4);
-            assert.equal('1,2,3,4', vec.join());
-            assert.equal('1+2+3+4', vec.join('+'));
-            assert.equal('1,2,3,4', vec.toString());
+            assert.equal("1,2,3,4", vec.join());
+            assert.equal("1+2+3+4", vec.join("+"));
+            assert.equal("1,2,3,4", vec.toString());
             vec.delete();
         });
 
         test("fill", function() {
             const vec = new cm.DoubleVector();
             vec.resize(4, 0);
-            assert.equal('1,1,1,1', vec.fill(1).toString());
-            assert.equal('1,1,1,1', vec.toString());
+            assert.equal("1,1,1,1", vec.fill(1).toString());
+            assert.equal("1,1,1,1", vec.toString());
             vec.fill(2, 1);
-            assert.equal('1,2,2,2', vec.toString());
+            assert.equal("1,2,2,2", vec.toString());
             vec.fill(3, -3, -2);
-            assert.equal('1,3,3,2', vec.toString());
+            assert.equal("1,3,3,2", vec.toString());
             vec.delete();
         });
 
@@ -1205,9 +1205,9 @@ module({
             vec.push(2);
             vec.push(3);
             vec.push(4);
-            assert.equal('1,2,3,4', vec.toString());
-            assert.equal('4,3,2,1', vec.reverse().toString());
-            assert.equal('4,3,2,1', vec.toString());
+            assert.equal("1,2,3,4", vec.toString());
+            assert.equal("4,3,2,1", vec.reverse().toString());
+            assert.equal("4,3,2,1", vec.toString());
             vec.delete();
         });
 
@@ -1217,13 +1217,13 @@ module({
             vec1.push(2);
             const vec2 = vec1.concat();
             vec1.set(0, 3);
-            assert.equal('3,2', vec1.toString());
-            assert.equal('1,2', vec2.toString());
+            assert.equal("3,2", vec1.toString());
+            assert.equal("1,2", vec2.toString());
             const vec3 = new cm.DoubleVector();
             vec3.push(3);
             vec3.push(4);
             const vec4 = vec2.concat(vec3);
-            assert.equal('1,2,3,4', vec4.toString());
+            assert.equal("1,2,3,4", vec4.toString());
             vec1.delete();
             vec2.delete();
             vec3.delete();
@@ -1238,13 +1238,13 @@ module({
             vec1.push(4);
             vec1.push(5);
             const vec2 = vec1.slice(2);
-            assert.equal('3,4,5', vec2.toString());
+            assert.equal("3,4,5", vec2.toString());
             const vec3 = vec1.slice(2, 4);
-            assert.equal('3,4', vec3.toString());
+            assert.equal("3,4", vec3.toString());
             const vec4 = vec1.slice(-2);
-            assert.equal('4,5', vec4.toString());
+            assert.equal("4,5", vec4.toString());
             const vec5 = vec1.slice(2, -1);
-            assert.equal('3,4', vec5.toString());
+            assert.equal("3,4", vec5.toString());
             vec1.delete();
             vec2.delete();
             vec3.delete();
@@ -1279,6 +1279,28 @@ module({
                 assert.equal(e[1], v.done);
             });
             it.delete();
+            vec.delete();
+        });
+
+        test("forEach", function() {
+            const expectedList = [[0, 1], [1, 2], [2, 3], 0];
+            const t = Object();
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(2);
+            vec.push(3);
+            vec.forEach(function(e, i, v) {
+                const expectedValues = expectedList.shift();
+                assert.equal(expectedValues[0], i);
+                assert.equal(expectedValues[1], e);
+                assert.equal(e, v.get(i));
+                assert.true(t === this);
+                t.count++;
+            }, t);
+            assert.equal(1, expectedList.length);
+            assert.throws(TypeError, function() {
+                vec.forEach(null);
+            });
             vec.delete();
         });
     });

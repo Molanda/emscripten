@@ -1132,6 +1132,142 @@ module({
        });
     });
 
+    BaseFixture.extend("vector_as_array", function() {
+        test("length and resize", function() {
+            const vec = new cm.DoubleVector();
+            assert.equal(0, vec.length);
+            vec.resize(2, 0);
+            assert.equal(2, vec.length);
+            assert.equal(0, vec.get(0));
+            assert.equal(0, vec.get(1));
+            vec.delete();
+        });
+
+        test("set and get", function() {
+            const vec = new cm.DoubleVector();
+            vec.resize(3, 2);
+            vec.set(0, 1);
+            vec.set(-1, 3);
+            assert.equal(1, vec.get(0));
+            assert.equal(2, vec.get(1));
+            assert.equal(3, vec.get(2));
+            assert.equal(3, vec.get(-1));
+            assert.equal(2, vec.get(-2));
+            assert.equal(1, vec.get(-3));
+            vec.delete();
+        });
+
+        test("push, pop, shift, unshift", function() {
+            const vec = new cm.DoubleVector();
+            assert.equal(1, vec.push(3));
+            assert.equal(2, vec.unshift(2));
+            assert.equal(3, vec.push(4));
+            assert.equal(4, vec.unshift(1));
+            assert.equal(4, vec.length);
+            assert.equal(1, vec.get(0));
+            assert.equal(2, vec.get(1));
+            assert.equal(3, vec.get(2));
+            assert.equal(4, vec.get(3));
+            assert.equal(1, vec.shift());
+            assert.equal(4, vec.pop());
+            assert.equal(2, vec.shift());
+            assert.equal(3, vec.pop());
+            vec.delete();
+         });
+        
+        test("join and toString", function() {
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(2);
+            vec.push(3);
+            vec.push(4);
+            assert.equal('1,2,3,4', vec.join());
+            assert.equal('1+2+3+4', vec.join('+'));
+            assert.equal('1,2,3,4', vec.toString());
+            vec.delete();
+        });
+
+        test("fill", function() {
+            const vec = new cm.DoubleVector();
+            vec.resize(4, 0);
+            assert.equal('1,1,1,1', vec.fill(1).toString());
+            assert.equal('1,1,1,1', vec.toString());
+            vec.fill(2, 1);
+            assert.equal('1,2,2,2', vec.toString());
+            vec.fill(3, -3, -2);
+            assert.equal('1,3,3,2', vec.toString());
+            vec.delete();
+        });
+
+        test("reverse", function() {
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(2);
+            vec.push(3);
+            vec.push(4);
+            assert.equal('1,2,3,4', vec.toString());
+            assert.equal('4,3,2,1', vec.reverse().toString());
+            assert.equal('4,3,2,1', vec.toString());
+            vec.delete();
+        });
+
+        test("concat", function() {
+            const vec1 = new cm.DoubleVector();
+            vec1.push(1);
+            vec1.push(2);
+            const vec2 = vec1.concat();
+            vec1.set(0, 3);
+            assert.equal('3,2', vec1.toString());
+            assert.equal('1,2', vec2.toString());
+            const vec3 = new cm.DoubleVector();
+            vec3.push(3);
+            vec3.push(4);
+            const vec4 = vec2.concat(vec3);
+            assert.equal('1,2,3,4', vec4.toString());
+            vec1.delete();
+            vec2.delete();
+            vec3.delete();
+            vec4.delete();
+        });
+
+        test("slice", function() {
+            const vec1 = new cm.DoubleVector();
+            vec1.push(1);
+            vec1.push(2);
+            vec1.push(3);
+            vec1.push(4);
+            vec1.push(5);
+            const vec2 = vec1.slice(2);
+            assert.equal('3,4,5', vec2.toString());
+            const vec3 = vec1.slice(2, 4);
+            assert.equal('3,4', vec3.toString());
+            const vec4 = vec1.slice(-2);
+            assert.equal('4,5', vec4.toString());
+            const vec5 = vec1.slice(2, -1);
+            assert.equal('3,4', vec5.toString());
+            vec1.delete();
+            vec2.delete();
+            vec3.delete();
+            vec4.delete();
+            vec5.delete();
+        });
+
+        test("values", function() {
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(2);
+            vec.push(3);
+            const it = vec.values();
+            [[1, false], [2, false], [3, false], [undefined, true]].forEach(e => {
+                const v = it.next();
+                assert.equal(e[0], v.value);
+                assert.equal(e[1], v.done);
+            });
+            it.delete();
+            vec.delete();
+        });
+    });
+
     BaseFixture.extend("functors", function() {
         test("can get and call function ptrs", function() {
             var ptr = cm.emval_test_get_function_ptr();

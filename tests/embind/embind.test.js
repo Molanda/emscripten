@@ -1141,6 +1141,7 @@ module({
             assert.equal(0, vec.get(0));
             assert.equal(0, vec.get(1));
             vec.delete();
+            assert.equal(0, cm.count_emval_handles());
         });
 
         test("set and get", function() {
@@ -1155,6 +1156,7 @@ module({
             assert.equal(2, vec.get(-2));
             assert.equal(1, vec.get(-3));
             vec.delete();
+            assert.equal(0, cm.count_emval_handles());
         });
 
         test("push, pop, shift, unshift", function() {
@@ -1173,6 +1175,7 @@ module({
             assert.equal(2, vec.shift());
             assert.equal(3, vec.pop());
             vec.delete();
+            assert.equal(0, cm.count_emval_handles());
          });
         
         test("join and toString", function() {
@@ -1185,6 +1188,7 @@ module({
             assert.equal("1+2+3+4", vec.join("+"));
             assert.equal("1,2,3,4", vec.toString());
             vec.delete();
+            assert.equal(0, cm.count_emval_handles());
         });
 
         test("fill", function() {
@@ -1197,6 +1201,7 @@ module({
             vec.fill(3, -3, -2);
             assert.equal("1,3,3,2", vec.toString());
             vec.delete();
+            assert.equal(0, cm.count_emval_handles());
         });
 
         test("reverse", function() {
@@ -1209,6 +1214,7 @@ module({
             assert.equal("4,3,2,1", vec.reverse().toString());
             assert.equal("4,3,2,1", vec.toString());
             vec.delete();
+            assert.equal(0, cm.count_emval_handles());
         });
 
         test("concat", function() {
@@ -1228,6 +1234,7 @@ module({
             vec2.delete();
             vec3.delete();
             vec4.delete();
+            assert.equal(0, cm.count_emval_handles());
         });
 
         test("slice", function() {
@@ -1250,6 +1257,7 @@ module({
             vec3.delete();
             vec4.delete();
             vec5.delete();
+            assert.equal(0, cm.count_emval_handles());
         });
 
         test("entries", function() {
@@ -1265,6 +1273,23 @@ module({
             });
             it.delete();
             vec.delete();
+            assert.equal(0, cm.count_emval_handles());
+        });
+
+        test("keys", function() {
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(2);
+            vec.push(3);
+            const it = vec.keys();
+            [[0, false], [1, false], [2, false], [undefined, true]].forEach(e => {
+                const v = it.next();
+                assert.equal(e[0], v.value);
+                assert.equal(e[1], v.done);
+            });
+            it.delete();
+            vec.delete();
+            assert.equal(0, cm.count_emval_handles());
         });
 
         test("values", function() {
@@ -1280,6 +1305,7 @@ module({
             });
             it.delete();
             vec.delete();
+            assert.equal(0, cm.count_emval_handles());
         });
 
         test("forEach", function() {
@@ -1295,14 +1321,63 @@ module({
                 assert.equal(expectedValues[1], e);
                 assert.equal(e, v.get(i));
                 assert.true(t === this);
-                t.count++;
             }, t);
             assert.equal(1, expectedList.length);
             assert.throws(TypeError, function() {
                 vec.forEach(null);
             });
             vec.delete();
+            assert.equal(0, cm.count_emval_handles());
         });
+
+        /*
+        test("every", function() {
+            const t = Object();
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(2);
+            vec.push(3);
+            assert.true(vec.every(function(e, i, v) {
+                assert.equal("number", typeof e);
+                assert.equal("number", typeof i);
+                assert.equal(e, v.get(i));
+                assert.true(t === this);
+                return e < 4;
+            }, t));
+            assert.false(vec.every(function(e) {
+                return e < 3;
+            }));
+            assert.throws(TypeError, function() {
+                vec.every(null);
+            });
+            vec.delete();
+            assert.equal(0, cm.count_emval_handles());
+        });
+
+        test("some", function() {
+            const expectedList = [[0, 1], [1, 2], [2, 3], 0];
+            const t = Object();
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(2);
+            vec.push(3);
+            assert.true(vec.some(function(e, i, v) {
+                assert.equal("number", typeof e);
+                assert.equal("number", typeof i);
+                assert.equal(e, v.get(i));
+                assert.true(t === this);
+                return e > 1;
+            }, t));
+            assert.false(vec.some(function(e) {
+                return e > 3;
+            }));
+            assert.throws(TypeError, function() {
+                vec.some(null);
+            });
+            vec.delete();
+            assert.equal(0, cm.count_emval_handles());
+        });
+        */
     });
 
     BaseFixture.extend("functors", function() {

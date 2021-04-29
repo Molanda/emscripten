@@ -1706,6 +1706,10 @@ namespace emscripten {
     ////////////////////////////////////////////////////////////////////////////////
 
     namespace internal {
+        enum class vector_array_iterator_type {
+             KEYS, VALUES, ENTRIES,
+        };
+
         template<typename VectorType>
         struct VectorArrayValue {
             VectorArrayValue()
@@ -1721,22 +1725,28 @@ namespace emscripten {
         template<typename VectorType>
         class VectorArrayIterator {
         public:
-            VectorArrayIterator(const VectorType& v, bool kvp)
+            VectorArrayIterator(const VectorType& v, vector_array_iterator_type t)
                 : vp(&v)
                 , index(0)
-                , kvp(kvp) {}
+                , type(t) {}
 
             ~VectorArrayIterator() {}
 
             const VectorArrayValue<VectorType> next() {
                 VectorArrayValue<VectorType> vav;
                 if (index < (ssize_t)vp->size()) {
-                    if (kvp) {
-                      vav.value = val::array();
-                      vav.value.set(val(0), val(index));
-                      vav.value.set(val(1), val(vp->at(index)));
-                    } else {
-                      vav.value = val(vp->at(index));
+                    switch (type) {
+                        case vector_array_iterator_type::KEYS:
+                            vav.value = val(index);
+                            break;
+                        case vector_array_iterator_type::VALUES:
+                            vav.value = val(vp->at(index));
+                            break;
+                        case vector_array_iterator_type::ENTRIES:
+                            vav.value = val::array();
+                            vav.value.set(val(0), val(index));
+                            vav.value.set(val(1), val(vp->at(index)));
+                            break;
                     }
                     vav.done = false;
                     index += 1;
@@ -1747,7 +1757,7 @@ namespace emscripten {
         private:
             const VectorType* vp;
             ssize_t index;
-            bool kvp;
+            vector_array_iterator_type type;
         };
 
         template<typename VectorType>
@@ -1775,7 +1785,27 @@ namespace emscripten {
             static VectorArrayIterator<VectorType> entries(
                 VectorType& v
             ) {
-                return VectorArrayIterator<VectorType>(v, true);
+                return VectorArrayIterator<VectorType>(v, vector_array_iterator_type::ENTRIES);
+            }
+
+            static bool every(
+                VectorType& v,
+                const val& callbackFn
+            ) {
+                return every(v, callbackFn, val::undefined());
+            }
+
+            static bool every(
+                VectorType& v,
+                const val& callbackFn,
+                const val& thisArg
+            ) {
+                ssize_t size = (ssize_t)v.size();
+                for (ssize_t i = 0; i<size; ++i) {
+                    if (!callbackFn.call<bool>("call", thisArg, v[i], i, v))
+                        return false;
+                }
+                return true;
             }
 
             static VectorType& fill(
@@ -1815,22 +1845,24 @@ namespace emscripten {
                 return v;
             }
 
-            static void forEach(
+            static bool some(
                 VectorType& v,
                 const val& callbackFn
             ) {
-                forEach(v, callbackFn, val::undefined());
+                return some(v, callbackFn, val::undefined());
             }
 
-            static void forEach(
+            static bool some(
                 VectorType& v,
                 const val& callbackFn,
                 const val& thisArg
             ) {
                 ssize_t size = (ssize_t)v.size();
                 for (ssize_t i = 0; i<size; ++i) {
-                    callbackFn.call<void>("call", thisArg, v[i], i, v);
+                    if (callbackFn.call<bool>("call", thisArg, v[i], i, v))
+                        return true;
                 }
+                return false;
             }
 
             static val get(
@@ -1867,6 +1899,12 @@ namespace emscripten {
                     }
                 }
                 return s;
+            }
+
+            static VectorArrayIterator<VectorType> keys(
+                VectorType& v
+            ) {
+                return VectorArrayIterator<VectorType>(v, vector_array_iterator_type::KEYS);
             }
 
             static val pop(
@@ -1962,6 +2000,24 @@ namespace emscripten {
                 return vn;
             }
 
+            static void forEach(
+                VectorType& v,
+                const val& callbackFn
+            ) {
+                forEach(v, callbackFn, val::undefined());
+            }
+
+            static void forEach(
+                VectorType& v,
+                const val& callbackFn,
+                const val& thisArg
+            ) {
+                ssize_t size = (ssize_t)v.size();
+                for (ssize_t i = 0; i<size; ++i) {
+                    callbackFn.call<void>("call", thisArg, v[i], i, v);
+                }
+            }
+
             static size_t unshift(
                 VectorType& v,
                 const typename VectorType::value_type& value
@@ -1974,7 +2030,7 @@ namespace emscripten {
             static VectorArrayIterator<VectorType> values(
                 VectorType& v
             ) {
-                return VectorArrayIterator<VectorType>(v, false);
+                return VectorArrayIterator<VectorType>(v, vector_array_iterator_type::VALUES);
             }
         };
     }
@@ -2000,6 +2056,8 @@ namespace emscripten {
             .function("concat", select_overload<VecType(const VecType&)>(&internal::VectorArrayAccess<VecType>::concat))
             .function("concat", select_overload<VecType(const VecType&, const VecType&)>(&internal::VectorArrayAccess<VecType>::concat))
             .function("entries", &internal::VectorArrayAccess<VecType>::entries)
+            .function("every", select_overload<bool(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::every))
+            .function("every", select_overload<bool(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::every))
             .function("fill", select_overload<VecType&(VecType&, const T&)>(&internal::VectorArrayAccess<VecType>::fill))
             .function("fill", select_overload<VecType&(VecType&, const T&, ssize_t)>(&internal::VectorArrayAccess<VecType>::fill))
             .function("fill", select_overload<VecType&(VecType&, const T&, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::fill))
@@ -2008,6 +2066,7 @@ namespace emscripten {
             .function("get", &internal::VectorArrayAccess<VecType>::get)
             .function("join", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::join))
             .function("join", select_overload<std::string(const VecType&, const std::string&)>(&internal::VectorArrayAccess<VecType>::join))
+            .function("keys", &internal::VectorArrayAccess<VecType>::keys)
             .function("pop", &internal::VectorArrayAccess<VecType>::pop)
             .function("push", &internal::VectorArrayAccess<VecType>::push)
             .function("resize", resize)
@@ -2017,6 +2076,8 @@ namespace emscripten {
             .function("slice", select_overload<VecType(const VecType&)>(&internal::VectorArrayAccess<VecType>::slice))
             .function("slice", select_overload<VecType(const VecType&, ssize_t)>(&internal::VectorArrayAccess<VecType>::slice))
             .function("slice", select_overload<VecType(const VecType&, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::slice))
+            .function("some", select_overload<bool(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::some))
+            .function("some", select_overload<bool(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::some))
             .function("toString", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::join))
             .function("unshift", &internal::VectorArrayAccess<VecType>::unshift)
             .function("values", &internal::VectorArrayAccess<VecType>::values)

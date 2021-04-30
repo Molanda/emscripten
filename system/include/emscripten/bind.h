@@ -1970,6 +1970,27 @@ namespace emscripten {
                 return VectorArrayIterator<VectorType>(v, vector_array_iterator_type::KEYS);
             }
 
+            static val map(
+                VectorType& v,
+                const val& callbackFn
+            ) {
+                map(v, callbackFn, val::undefined());
+            }
+
+            static val map(
+                VectorType& v,
+                const val& callbackFn,
+                const val& thisArg
+            ) {
+                val array = val::array();
+                ssize_t size = (ssize_t)v.size();
+                for (ssize_t i = 0; i<size; ++i) {
+                    val entry = callbackFn.call<val>("call", thisArg, v[i], i, v);
+                    array.call<void>("push", entry);
+                }
+                return array;
+            }
+
             static val pop(
                 VectorType& v
             ) {
@@ -2139,6 +2160,8 @@ namespace emscripten {
             .function("join", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::join))
             .function("join", select_overload<std::string(const VecType&, const std::string&)>(&internal::VectorArrayAccess<VecType>::join))
             .function("keys", &internal::VectorArrayAccess<VecType>::keys)
+            .function("map", select_overload<val(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::map))
+            .function("map", select_overload<val(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::map))
             .function("pop", &internal::VectorArrayAccess<VecType>::pop)
             .function("push", &internal::VectorArrayAccess<VecType>::push)
             .function("resize", resize)

@@ -1430,6 +1430,25 @@ module({
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });
+
+        test("map", function() {
+            const t = Object();
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(2);
+            vec.push(3);
+            const arr = vec.map(function(e, i, v) {
+                assert.equal("number", typeof e);
+                assert.equal("number", typeof i);
+                assert.equal(e, v.get(i));
+                assert.true(t === this);
+                return `[${i}:${e}]`;
+            }, t);
+            assert.equals("Array", arr.constructor.name);
+            assert.equals("[0:1][1:2][2:3]", arr.join(''));
+            vec.delete();
+            assert.equal(0, cm.count_emval_handles());
+        });
     });
 
     BaseFixture.extend("functors", function() {

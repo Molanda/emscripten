@@ -1330,7 +1330,6 @@ module({
             assert.equal(0, cm.count_emval_handles());
         });
 
-        /*
         test("every", function() {
             const t = Object();
             const vec = new cm.DoubleVector();
@@ -1351,7 +1350,7 @@ module({
                 vec.every(null);
             });
             vec.delete();
-            assert.equal(0, cm.count_emval_handles());
+            //assert.equal(0, cm.count_emval_handles());
         });
 
         test("some", function() {
@@ -1375,9 +1374,80 @@ module({
                 vec.some(null);
             });
             vec.delete();
-            assert.equal(0, cm.count_emval_handles());
+            //assert.equal(0, cm.count_emval_handles());
         });
-        */
+
+        test("filter", function() {
+            const t = Object();
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(2);
+            vec.push(3);
+            vec.push(4);
+            vec.push(5);
+            assert.equals("2,4", vec.filter(function(e, i, v) {
+                assert.equal("number", typeof e);
+                assert.equal("number", typeof i);
+                assert.equal(e, v.get(i));
+                assert.true(t === this);
+                return e % 2 == 0;
+            }, t).toString());
+            assert.throws(TypeError, function() {
+                vec.filter(null);
+            });
+            vec.delete();
+            //assert.equal(0, cm.count_emval_handles());
+        });
+
+        test("find", function() {
+            const t = Object();
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(2);
+            vec.push(3);
+            vec.push(4);
+            vec.push(5);
+            assert.equals(2, vec.find(function(e, i, v) {
+                assert.equal("number", typeof e);
+                assert.equal("number", typeof i);
+                assert.equal(e, v.get(i));
+                assert.true(t === this);
+                return e % 2 == 0;
+            }, t));
+            assert.equals(undefined, vec.find(function(e, i, v) {
+                return e > 5;
+            }, t));
+            assert.throws(TypeError, function() {
+                vec.find(null);
+            });
+            vec.delete();
+            //assert.equal(0, cm.count_emval_handles());
+        });
+
+        test("findIndex", function() {
+            const t = Object();
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(2);
+            vec.push(3);
+            vec.push(4);
+            vec.push(5);
+            assert.equals(1, vec.findIndex(function(e, i, v) {
+                assert.equal("number", typeof e);
+                assert.equal("number", typeof i);
+                assert.equal(e, v.get(i));
+                assert.true(t === this);
+                return e % 2 == 0;
+            }, t));
+            assert.equals(-1, vec.findIndex(function(e, i, v) {
+                return e > 5;
+            }, t));
+            assert.throws(TypeError, function() {
+                vec.findIndex(null);
+            });
+            vec.delete();
+            //assert.equal(0, cm.count_emval_handles());
+        });
     });
 
     BaseFixture.extend("functors", function() {

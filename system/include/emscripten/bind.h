@@ -1802,8 +1802,9 @@ namespace emscripten {
             ) {
                 ssize_t size = (ssize_t)v.size();
                 for (ssize_t i = 0; i<size; ++i) {
-                    if (!callbackFn.call<bool>("call", thisArg, v[i], i, v))
+                    if (!callbackFn.call<bool>("call", thisArg, v[i], i, v)) {
                         return false;
+                    }
                 }
                 return true;
             }
@@ -1845,24 +1846,86 @@ namespace emscripten {
                 return v;
             }
 
-            static bool some(
+            static VectorType filter(
                 VectorType& v,
                 const val& callbackFn
             ) {
-                return some(v, callbackFn, val::undefined());
+                return filter(v, callbackFn, val::undefined());
             }
 
-            static bool some(
+            static VectorType filter(
+                VectorType& v,
+                const val& callbackFn,
+                const val& thisArg
+            ) {
+                VectorType vn;
+                ssize_t size = (ssize_t)v.size();
+                for (ssize_t i = 0; i<size; ++i) {
+                    if (callbackFn.call<bool>("call", thisArg, v[i], i, v)) {
+                        vn.push_back(v[i]);
+                    }
+                }
+                return vn;
+            }
+
+            static val find(
+                VectorType& v,
+                const val& callbackFn
+            ) {
+                return find(v, callbackFn, val::undefined());
+            }
+
+            static val find(
                 VectorType& v,
                 const val& callbackFn,
                 const val& thisArg
             ) {
                 ssize_t size = (ssize_t)v.size();
                 for (ssize_t i = 0; i<size; ++i) {
-                    if (callbackFn.call<bool>("call", thisArg, v[i], i, v))
-                        return true;
+                    if (callbackFn.call<bool>("call", thisArg, v[i], i, v)) {
+                        return val(v[i]);
+                    }
                 }
-                return false;
+                return val::undefined();
+            }
+
+            static ssize_t findIndex(
+                VectorType& v,
+                const val& callbackFn
+            ) {
+                return findIndex(v, callbackFn, val::undefined());
+            }
+
+            static ssize_t findIndex(
+                VectorType& v,
+                const val& callbackFn,
+                const val& thisArg
+            ) {
+                ssize_t size = (ssize_t)v.size();
+                for (ssize_t i = 0; i<size; ++i) {
+                    if (callbackFn.call<bool>("call", thisArg, v[i], i, v)) {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            static void forEach(
+                VectorType& v,
+                const val& callbackFn
+            ) {
+                forEach(v, callbackFn, val::undefined());
+            }
+
+            static void forEach(
+                VectorType& v,
+                const val& callbackFn,
+                const val& thisArg
+            ) {
+                ssize_t size = (ssize_t)v.size();
+                for (ssize_t i = 0; i<size; ++i) {
+                    callbackFn.call<void>("call", thisArg, v[i], i, v);
+                }
             }
 
             static val get(
@@ -2000,22 +2063,25 @@ namespace emscripten {
                 return vn;
             }
 
-            static void forEach(
+            static bool some(
                 VectorType& v,
                 const val& callbackFn
             ) {
-                forEach(v, callbackFn, val::undefined());
+                return some(v, callbackFn, val::undefined());
             }
 
-            static void forEach(
+            static bool some(
                 VectorType& v,
                 const val& callbackFn,
                 const val& thisArg
             ) {
                 ssize_t size = (ssize_t)v.size();
                 for (ssize_t i = 0; i<size; ++i) {
-                    callbackFn.call<void>("call", thisArg, v[i], i, v);
+                    if (callbackFn.call<bool>("call", thisArg, v[i], i, v)) {
+                        return true;
+                    }
                 }
+                return false;
             }
 
             static size_t unshift(
@@ -2058,6 +2124,12 @@ namespace emscripten {
             .function("entries", &internal::VectorArrayAccess<VecType>::entries)
             .function("every", select_overload<bool(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::every))
             .function("every", select_overload<bool(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::every))
+            .function("filter", select_overload<VecType(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::filter))
+            .function("filter", select_overload<VecType(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::filter))
+            .function("find", select_overload<val(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::find))
+            .function("find", select_overload<val(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::find))
+            .function("findIndex", select_overload<ssize_t(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::findIndex))
+            .function("findIndex", select_overload<ssize_t(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::findIndex))
             .function("fill", select_overload<VecType&(VecType&, const T&)>(&internal::VectorArrayAccess<VecType>::fill))
             .function("fill", select_overload<VecType&(VecType&, const T&, ssize_t)>(&internal::VectorArrayAccess<VecType>::fill))
             .function("fill", select_overload<VecType&(VecType&, const T&, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::fill))

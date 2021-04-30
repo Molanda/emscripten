@@ -1323,9 +1323,6 @@ module({
                 assert.true(t === this);
             }, t);
             assert.equal(1, expectedList.length);
-            //assert.throws(TypeError, function() {
-            //    vec.forEach(null);
-            //});
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });
@@ -1346,9 +1343,6 @@ module({
             assert.false(vec.every(function(e) {
                 return e < 3;
             }));
-            //assert.throws(TypeError, function() {
-            //    vec.every(null);
-            //});
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });
@@ -1370,9 +1364,6 @@ module({
             assert.false(vec.some(function(e) {
                 return e > 3;
             }));
-            //assert.throws(TypeError, function() {
-            //    vec.some(null);
-            //});
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });
@@ -1392,9 +1383,6 @@ module({
                 assert.true(t === this);
                 return e % 2 == 0;
             }, t).toString());
-            //assert.throws(TypeError, function() {
-            //    vec.filter(null);
-            //});
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });
@@ -1417,9 +1405,6 @@ module({
             assert.equals(undefined, vec.find(function(e, i, v) {
                 return e > 5;
             }, t));
-            //assert.throws(TypeError, function() {
-            //    vec.find(null);
-            //});
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });
@@ -1442,9 +1427,6 @@ module({
             assert.equals(-1, vec.findIndex(function(e, i, v) {
                 return e > 5;
             }, t));
-            //assert.throws(TypeError, function() {
-            //    vec.findIndex(null);
-            //});
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });

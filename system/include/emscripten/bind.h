@@ -2151,6 +2151,19 @@ namespace emscripten {
                 return false;
             }
 
+            static VectorType& sort(
+                VectorType& v,
+                const val& callbackFn
+            ) {
+                std::sort(v.begin(), v.end(), [callbackFn](
+                    const typename VectorType::value_type& v1,
+                    const typename VectorType::value_type& v2
+                ) {
+                    return callbackFn.call<int>("call", val::undefined(), v1, v2) < 0;
+                });
+                return v;
+            }
+
             static size_t unshift(
                 VectorType& v,
                 const typename VectorType::value_type& value
@@ -2223,6 +2236,7 @@ namespace emscripten {
             .function("slice", select_overload<VecType(const VecType&, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::slice))
             .function("some", select_overload<bool(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::some))
             .function("some", select_overload<bool(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::some))
+            .function("sort", select_overload<VecType&(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::sort))
             .function("toString", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::join))
             .function("unshift", &internal::VectorArrayAccess<VecType>::unshift)
             .function("values", &internal::VectorArrayAccess<VecType>::values)

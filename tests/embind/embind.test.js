@@ -1503,6 +1503,32 @@ module({
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });
+
+        test("sort", function() {
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(30);
+            vec.push(4);
+            vec.push(21);
+            vec.push(100000);
+            const s1 = vec.sort(function(e1, e2) {
+                // FIXME: This should not have a sort function
+                assert.equal("number", typeof e1);
+                assert.equal("number", typeof e2);
+                return e1.toString() < e2.toString() ? -1 : 0;
+            });
+            assert.equal("1,100000,21,30,4", s1.toString());
+            assert.equal("1,100000,21,30,4", vec.toString());
+            const s2 = vec.sort(function(e1, e2) {
+                assert.equal("number", typeof e1);
+                assert.equal("number", typeof e2);
+                return e1 - e2;
+            });
+            assert.equal("1,4,21,30,100000", s2.toString());
+            assert.equal("1,4,21,30,100000", vec.toString());
+            vec.delete();
+            assert.equal(0, cm.count_emval_handles());
+        });
     });
 
     BaseFixture.extend("functors", function() {

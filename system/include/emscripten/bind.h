@@ -1801,7 +1801,7 @@ namespace emscripten {
                 const val& thisArg
             ) {
                 ssize_t size = (ssize_t)v.size();
-                for (ssize_t i = 0; i<size; ++i) {
+                for (ssize_t i = 0; i < size; ++i) {
                     if (!callbackFn.call<bool>("call", thisArg, v[i], i, v)) {
                         return false;
                     }
@@ -1860,7 +1860,7 @@ namespace emscripten {
             ) {
                 VectorType vn;
                 ssize_t size = (ssize_t)v.size();
-                for (ssize_t i = 0; i<size; ++i) {
+                for (ssize_t i = 0; i < size; ++i) {
                     if (callbackFn.call<bool>("call", thisArg, v[i], i, v)) {
                         vn.push_back(v[i]);
                     }
@@ -1881,7 +1881,7 @@ namespace emscripten {
                 const val& thisArg
             ) {
                 ssize_t size = (ssize_t)v.size();
-                for (ssize_t i = 0; i<size; ++i) {
+                for (ssize_t i = 0; i < size; ++i) {
                     if (callbackFn.call<bool>("call", thisArg, v[i], i, v)) {
                         return val(v[i]);
                     }
@@ -1902,7 +1902,7 @@ namespace emscripten {
                 const val& thisArg
             ) {
                 ssize_t size = (ssize_t)v.size();
-                for (ssize_t i = 0; i<size; ++i) {
+                for (ssize_t i = 0; i < size; ++i) {
                     if (callbackFn.call<bool>("call", thisArg, v[i], i, v)) {
                         return i;
                     }
@@ -1923,7 +1923,7 @@ namespace emscripten {
                 const val& thisArg
             ) {
                 ssize_t size = (ssize_t)v.size();
-                for (ssize_t i = 0; i<size; ++i) {
+                for (ssize_t i = 0; i < size; ++i) {
                     callbackFn.call<void>("call", thisArg, v[i], i, v);
                 }
             }
@@ -1937,9 +1937,8 @@ namespace emscripten {
                 }
                 if (index >= 0 && index < v.size()) {
                     return val(v[index]);
-                } else {
-                    return val::undefined();
                 }
+                return val::undefined();
             }
 
             static std::string join(
@@ -1956,7 +1955,7 @@ namespace emscripten {
                 if (v.size() > 0) {
                     s += val(v[0]).call<std::string>("toString");
                     ssize_t size = (ssize_t)v.size();
-                    for (ssize_t i = 1; i<size; ++i) {
+                    for (ssize_t i = 1; i < size; ++i) {
                         s += separator;
                         s += val(v[i]).call<std::string>("toString");
                     }
@@ -1974,7 +1973,7 @@ namespace emscripten {
                 VectorType& v,
                 const val& callbackFn
             ) {
-                map(v, callbackFn, val::undefined());
+                return map(v, callbackFn, val::undefined());
             }
 
             static val map(
@@ -1984,7 +1983,7 @@ namespace emscripten {
             ) {
                 val array = val::array();
                 ssize_t size = (ssize_t)v.size();
-                for (ssize_t i = 0; i<size; ++i) {
+                for (ssize_t i = 0; i < size; ++i) {
                     val entry = callbackFn.call<val>("call", thisArg, v[i], i, v);
                     array.call<void>("push", entry);
                 }
@@ -1998,9 +1997,8 @@ namespace emscripten {
                     val e = val(v.back());
                     v.pop_back();
                     return e;
-                } else {
-                    return val::undefined();
                 }
+                return val::undefined();
             }
 
             static size_t push(
@@ -2009,6 +2007,55 @@ namespace emscripten {
             ) {
                 v.push_back(value);
                 return (size_t)v.size();
+            }
+
+            static val reduce(
+                VectorType& v,
+                const val& callbackFn
+            ) {
+                return reduce(v, callbackFn, val::undefined());
+            }
+
+            static val reduce(
+                VectorType& v,
+                const val& callbackFn,
+                const val& initialValue
+            ) {
+                ssize_t i = 0;
+                ssize_t size = (ssize_t)v.size();
+                val accumulator = initialValue;
+                if (accumulator.isUndefined() && size > 0) {
+                    accumulator = val(v[i]);
+                    ++i;
+                }
+                for (; i < size; ++i) {
+                    accumulator = callbackFn.call<val>("call", val::undefined(), accumulator, v[i], i, v);
+                }
+                return accumulator;
+            }
+
+            static val reduceRight(
+                VectorType& v,
+                const val& callbackFn
+            ) {
+                return reduceRight(v, callbackFn, val::undefined());
+            }
+
+            static val reduceRight(
+                VectorType& v,
+                const val& callbackFn,
+                const val& initialValue
+            ) {
+                ssize_t i = (ssize_t)v.size() - 1;
+                val accumulator = initialValue;
+                if (accumulator.isUndefined() && i >= 0) {
+                    accumulator = val(v[i]);
+                    --i;
+                }
+                for (; i >= 0; --i) {
+                    accumulator = callbackFn.call<val>("call", val::undefined(), accumulator, v[i], i, v);
+                }
+                return accumulator;
             }
 
             static VectorType& reverse(
@@ -2041,9 +2088,8 @@ namespace emscripten {
                     val e = val(v.back());
                     v.pop_back();
                     return e;
-                } else {
-                    return val::undefined();
                 }
+                return val::undefined();
             }
 
             static VectorType slice(
@@ -2097,7 +2143,7 @@ namespace emscripten {
                 const val& thisArg
             ) {
                 ssize_t size = (ssize_t)v.size();
-                for (ssize_t i = 0; i<size; ++i) {
+                for (ssize_t i = 0; i < size; ++i) {
                     if (callbackFn.call<bool>("call", thisArg, v[i], i, v)) {
                         return true;
                     }
@@ -2164,6 +2210,10 @@ namespace emscripten {
             .function("map", select_overload<val(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::map))
             .function("pop", &internal::VectorArrayAccess<VecType>::pop)
             .function("push", &internal::VectorArrayAccess<VecType>::push)
+            .function("reduce", select_overload<val(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::reduce))
+            .function("reduce", select_overload<val(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::reduce))
+            .function("reduceRight", select_overload<val(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::reduceRight))
+            .function("reduceRight", select_overload<val(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::reduceRight))
             .function("resize", resize)
             .function("reverse", &internal::VectorArrayAccess<VecType>::reverse)
             .function("set", &internal::VectorArrayAccess<VecType>::set)

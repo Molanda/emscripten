@@ -1376,7 +1376,7 @@ module({
             vec.push(3);
             vec.push(4);
             vec.push(5);
-            assert.equals("2,4", vec.filter(function(e, i, v) {
+            assert.equal("2,4", vec.filter(function(e, i, v) {
                 assert.equal("number", typeof e);
                 assert.equal("number", typeof i);
                 assert.equal(e, v.get(i));
@@ -1395,14 +1395,14 @@ module({
             vec.push(3);
             vec.push(4);
             vec.push(5);
-            assert.equals(2, vec.find(function(e, i, v) {
+            assert.equal(2, vec.find(function(e, i, v) {
                 assert.equal("number", typeof e);
                 assert.equal("number", typeof i);
                 assert.equal(e, v.get(i));
                 assert.true(t === this);
                 return e % 2 == 0;
             }, t));
-            assert.equals(undefined, vec.find(function(e, i, v) {
+            assert.equal(undefined, vec.find(function(e, i, v) {
                 return e > 5;
             }, t));
             vec.delete();
@@ -1417,14 +1417,14 @@ module({
             vec.push(3);
             vec.push(4);
             vec.push(5);
-            assert.equals(1, vec.findIndex(function(e, i, v) {
+            assert.equal(1, vec.findIndex(function(e, i, v) {
                 assert.equal("number", typeof e);
                 assert.equal("number", typeof i);
                 assert.equal(e, v.get(i));
                 assert.true(t === this);
                 return e % 2 == 0;
             }, t));
-            assert.equals(-1, vec.findIndex(function(e, i, v) {
+            assert.equal(-1, vec.findIndex(function(e, i, v) {
                 return e > 5;
             }, t));
             vec.delete();
@@ -1444,8 +1444,62 @@ module({
                 assert.true(t === this);
                 return `[${i}:${e}]`;
             }, t);
-            assert.equals("Array", arr.constructor.name);
-            assert.equals("[0:1][1:2][2:3]", arr.join(''));
+            assert.equal("Array", arr.constructor.name);
+            assert.equal("[0:1] [1:2] [2:3]", arr.join(' '));
+            vec.delete();
+            assert.equal(0, cm.count_emval_handles());
+        });
+
+        test("reduce", function() {
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(2);
+            vec.push(3);
+            const a1 = vec.reduce(function(a, e, i, v) {
+                assert.equal("number", typeof a);
+                assert.equal("number", typeof e);
+                assert.equal("number", typeof i);
+                assert.equal(e, v.get(i));
+                return a - e;
+            });
+            assert.equal("number", typeof a1);
+            assert.equal(-4, a1);
+            const a2 = vec.reduce(function(a, e, i, v) {
+                assert.equal("bigint", typeof a);
+                assert.equal("number", typeof e);
+                assert.equal("number", typeof i);
+                assert.equal(e, v.get(i));
+                return a + BigInt(e);
+            }, 10n);
+            assert.equal("bigint", typeof a2);
+            assert.equal(16n, a2);
+            vec.delete();
+            assert.equal(0, cm.count_emval_handles());
+        });
+
+        test("reduceRight", function() {
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(2);
+            vec.push(3);
+            const a1 = vec.reduceRight(function(a, e, i, v) {
+                assert.equal("number", typeof a);
+                assert.equal("number", typeof e);
+                assert.equal("number", typeof i);
+                assert.equal(e, v.get(i));
+                return a - e;
+            });
+            assert.equal("number", typeof a1);
+            assert.equal(0, a1);
+            const a2 = vec.reduceRight(function(a, e, i, v) {
+                assert.equal("bigint", typeof a);
+                assert.equal("number", typeof e);
+                assert.equal("number", typeof i);
+                assert.equal(e, v.get(i));
+                return a + BigInt(e);
+            }, 10n);
+            assert.equal("bigint", typeof a2);
+            assert.equal(16n, a2);
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });

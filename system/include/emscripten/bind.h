@@ -2155,7 +2155,7 @@ namespace emscripten {
                 VectorType& v,
                 const val& callbackFn
             ) {
-                std::sort(v.begin(), v.end(), [callbackFn](
+                std::stable_sort(v.begin(), v.end(), [callbackFn](
                     const typename VectorType::value_type& v1,
                     const typename VectorType::value_type& v2
                 ) {

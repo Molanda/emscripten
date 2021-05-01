@@ -1505,28 +1505,34 @@ module({
         });
 
         test("sort", function() {
-            const vec = new cm.DoubleVector();
-            vec.push(1);
-            vec.push(30);
-            vec.push(4);
-            vec.push(21);
-            vec.push(100000);
-            const s1 = vec.sort(function(e1, e2) {
+            const vec1 = new cm.DoubleVector();
+            vec1.push(1);
+            vec1.push(30);
+            vec1.push(4);
+            vec1.push(21);
+            vec1.push(100000);
+            const s1 = vec1.sort(function(e1, e2) {
                 // FIXME: This should not have a sort function
                 assert.equal("number", typeof e1);
                 assert.equal("number", typeof e2);
                 return e1.toString() < e2.toString() ? -1 : 0;
             });
             assert.equal("1,100000,21,30,4", s1.toString());
-            assert.equal("1,100000,21,30,4", vec.toString());
-            const s2 = vec.sort(function(e1, e2) {
+            assert.equal("1,100000,21,30,4", vec1.toString());
+            const vec2 = new cm.DoubleVector();
+            vec2.push(115);
+            vec2.push(215);
+            vec2.push(313);
+            vec2.push(414);
+            const s2 = vec2.sort(function(e1, e2) {
                 assert.equal("number", typeof e1);
                 assert.equal("number", typeof e2);
-                return e1 - e2;
+                return (e1 % 100) - (e2 % 100);
             });
-            assert.equal("1,4,21,30,100000", s2.toString());
-            assert.equal("1,4,21,30,100000", vec.toString());
-            vec.delete();
+            assert.equal("313,414,115,215", s2.toString());
+            assert.equal("313,414,115,215", vec2.toString());
+            vec1.delete();
+            vec2.delete();
             assert.equal(0, cm.count_emval_handles());
         });
     });

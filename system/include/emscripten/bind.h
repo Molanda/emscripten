@@ -1830,17 +1830,18 @@ namespace emscripten {
                 ssize_t start,
                 ssize_t end
             ) {
+                ssize_t size = (ssize_t)v.size();
                 if (start < 0) {
-                    start += (ssize_t)v.size();
+                    start += size;
                     if (start < 0) {
                         start = 0;
                     }
                 }
                 if (end < 0) {
-                    end += (ssize_t)v.size();
+                    end += size;
                 }
-                if (end >= (ssize_t)v.size()) {
-                    end = (ssize_t)v.size() - 1;
+                if (end >= size) {
+                    end = size - 1;
                 }
                 std::fill(v.begin() + start, v.begin() + end + 1, value);
                 return v;
@@ -1932,13 +1933,41 @@ namespace emscripten {
                 const VectorType& v,
                 ssize_t index
             ) {
+                ssize_t size = (ssize_t)v.size();
                 if (index < 0) {
-                    index += (ssize_t)v.size();
+                    index += size;
                 }
-                if (index >= 0 && index < v.size()) {
+                if (index >= 0 && index < size) {
                     return val(v[index]);
                 }
                 return val::undefined();
+            }
+
+            static ssize_t indexOf(
+                const VectorType& v,
+                const typename VectorType::value_type& value
+            ) {
+                return indexOf(v, value, 0);
+            }
+
+            static ssize_t indexOf(
+                const VectorType& v,
+                const typename VectorType::value_type& value,
+                ssize_t start
+            ) {
+                ssize_t size = (ssize_t)v.size();
+                if (start < 0) {
+                    start += size;
+                    if (start < 0) {
+                        start = 0;
+                    }
+                }
+                for (ssize_t i = start; i < size; ++i) {
+                    if (val(v[i]).strictlyEquals(val(value))) {
+                        return i;
+                    }
+                }
+                return -1;
             }
 
             static std::string join(
@@ -1952,9 +1981,9 @@ namespace emscripten {
                 const std::string& separator
             ) {
                 std::string s;
-                if (v.size() > 0) {
+                ssize_t size = (ssize_t)v.size();
+                if (size > 0) {
                     s += val(v[0]).call<std::string>("toString");
-                    ssize_t size = (ssize_t)v.size();
                     for (ssize_t i = 1; i < size; ++i) {
                         s += separator;
                         s += val(v[i]).call<std::string>("toString");
@@ -2076,10 +2105,11 @@ namespace emscripten {
                 ssize_t index,
                 const typename VectorType::value_type& value
             ) {
+                ssize_t size = (ssize_t)v.size();
                 if (index < 0) {
-                    index += (ssize_t)v.size();
+                    index += size;
                 }
-                if (index >= 0 && index < v.size()) {
+                if (index >= 0 && index < size) {
                     v[index] = value;
                     return true;
                 }
@@ -2116,17 +2146,18 @@ namespace emscripten {
                 ssize_t start,
                 ssize_t end
             ) {
+                ssize_t size = (ssize_t)v.size();
                 if (start < 0) {
-                    start += (ssize_t)v.size();
+                    start += size;
                     if (start < 0) {
                         start = 0;
                     }
                 }
                 if (end < 0) {
-                    end += (ssize_t)v.size();
+                    end += size;
                 }
-                if (end > (ssize_t)v.size()) {
-                    end = (ssize_t)v.size();
+                if (end > size) {
+                    end = size;
                 }
                 VectorType vn;
                 if (end > start) {
@@ -2254,6 +2285,8 @@ namespace emscripten {
             .function("forEach", select_overload<void(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::forEach))
             .function("forEach", select_overload<void(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::forEach))
             .function("get", &internal::VectorArrayAccess<VecType>::get)
+            .function("indexOf", select_overload<ssize_t(const VecType&, const T&)>(&internal::VectorArrayAccess<VecType>::indexOf))
+            .function("indexOf", select_overload<ssize_t(const VecType&, const T&, ssize_t)>(&internal::VectorArrayAccess<VecType>::indexOf))
             .function("join", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::join))
             .function("join", select_overload<std::string(const VecType&, const std::string&)>(&internal::VectorArrayAccess<VecType>::join))
             .function("keys", &internal::VectorArrayAccess<VecType>::keys)

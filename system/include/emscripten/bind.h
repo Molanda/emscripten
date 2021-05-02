@@ -2024,7 +2024,10 @@ namespace emscripten {
                 ssize_t i = 0;
                 ssize_t size = (ssize_t)v.size();
                 val accumulator = initialValue;
-                if (accumulator.isUndefined() && size > 0) {
+                if (accumulator.isUndefined()) {
+                    if (size == 0) {
+                        val::global("TypeError").new_().throw_();
+                    }
                     accumulator = val(v[i]);
                     ++i;
                 }
@@ -2048,7 +2051,10 @@ namespace emscripten {
             ) {
                 ssize_t i = (ssize_t)v.size() - 1;
                 val accumulator = initialValue;
-                if (accumulator.isUndefined() && i >= 0) {
+                if (accumulator.isUndefined()) {
+                    if (i < 0) {
+                        val::global("TypeError").new_().throw_();
+                    }
                     accumulator = val(v[i]);
                     --i;
                 }

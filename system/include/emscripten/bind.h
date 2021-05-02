@@ -2152,14 +2152,46 @@ namespace emscripten {
             }
 
             static VectorType& sort(
+                VectorType& v
+            ) {
+                std::stable_sort(v.begin(), v.end(), [](
+                    const typename VectorType::value_type& e1,
+                    const typename VectorType::value_type& e2
+                ) {
+                    val ev1(e1);
+                    val ev2(e2);
+                    if (ev1.isUndefined()) {
+                        return false;
+                    }
+                    if (ev2.isUndefined()) {
+                        return true;
+                    }
+                    std::string es1;
+                    if (ev1.isNull()) {
+                        es1 = "null";
+                    } else {
+                        es1 = ev1.call<std::string>("toString");
+                    }
+                    std::string es2;
+                    if (ev2.isNull()) {
+                        es2 = "null";
+                    } else {
+                        es2 = ev2.call<std::string>("toString");
+                    }
+                    return es1.compare(es2) < 0;
+                });
+                return v;
+            }
+
+            static VectorType& sort(
                 VectorType& v,
                 const val& callbackFn
             ) {
                 std::stable_sort(v.begin(), v.end(), [callbackFn](
-                    const typename VectorType::value_type& v1,
-                    const typename VectorType::value_type& v2
+                    const typename VectorType::value_type& e1,
+                    const typename VectorType::value_type& e2
                 ) {
-                    return callbackFn.call<int>("call", val::undefined(), v1, v2) < 0;
+                    return callbackFn.call<int>("call", val::undefined(), e1, e2) < 0;
                 });
                 return v;
             }
@@ -2236,6 +2268,7 @@ namespace emscripten {
             .function("slice", select_overload<VecType(const VecType&, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::slice))
             .function("some", select_overload<bool(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::some))
             .function("some", select_overload<bool(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::some))
+            .function("sort", select_overload<VecType&(VecType&)>(&internal::VectorArrayAccess<VecType>::sort))
             .function("sort", select_overload<VecType&(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::sort))
             .function("toString", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::join))
             .function("unshift", &internal::VectorArrayAccess<VecType>::unshift)

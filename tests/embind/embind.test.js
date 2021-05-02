@@ -1177,7 +1177,7 @@ module({
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
          });
-        
+
         test("join and toString", function() {
             const vec = new cm.DoubleVector();
             vec.push(1);
@@ -1511,12 +1511,7 @@ module({
             vec1.push(4);
             vec1.push(21);
             vec1.push(100000);
-            const s1 = vec1.sort(function(e1, e2) {
-                // FIXME: This should not have a sort function
-                assert.equal("number", typeof e1);
-                assert.equal("number", typeof e2);
-                return e1.toString() < e2.toString() ? -1 : 0;
-            });
+            const s1 = vec1.sort();
             assert.equal("1,100000,21,30,4", s1.toString());
             assert.equal("1,100000,21,30,4", vec1.toString());
             const vec2 = new cm.DoubleVector();

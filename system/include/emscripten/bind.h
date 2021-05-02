@@ -1943,6 +1943,38 @@ namespace emscripten {
                 return val::undefined();
             }
 
+            static bool includes(
+                const VectorType& v,
+                const typename VectorType::value_type& value
+            ) {
+                return includes(v, value, 0);
+            }
+
+            static bool includes(
+                const VectorType& v,
+                const typename VectorType::value_type& value,
+                ssize_t start
+            ) {
+                ssize_t size = (ssize_t)v.size();
+                if (start < 0) {
+                    start += size;
+                    if (start < 0) {
+                        start = 0;
+                    }
+                }
+                val number(val::global("Number"));
+                bool isNaN = number.call<bool>("isNaN", val::undefined(), value);
+                for (ssize_t i = start; i < size; ++i) {
+                    if (val(v[i]).strictlyEquals(val(value))) {
+                        return true;
+                    }
+                    if (isNaN && number.call<bool>("isNaN", val::undefined(), v[i])) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
             static ssize_t indexOf(
                 const VectorType& v,
                 const typename VectorType::value_type& value
@@ -2312,6 +2344,8 @@ namespace emscripten {
             .function("forEach", select_overload<void(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::forEach))
             .function("forEach", select_overload<void(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::forEach))
             .function("get", &internal::VectorArrayAccess<VecType>::get)
+            .function("includes", select_overload<bool(const VecType&, const T&)>(&internal::VectorArrayAccess<VecType>::includes))
+            .function("includes", select_overload<bool(const VecType&, const T&, ssize_t)>(&internal::VectorArrayAccess<VecType>::includes))
             .function("indexOf", select_overload<ssize_t(const VecType&, const T&)>(&internal::VectorArrayAccess<VecType>::indexOf))
             .function("indexOf", select_overload<ssize_t(const VecType&, const T&, ssize_t)>(&internal::VectorArrayAccess<VecType>::indexOf))
             .function("join", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::join))

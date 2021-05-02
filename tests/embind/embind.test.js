@@ -1432,7 +1432,6 @@ module({
         });
 
         test("indexOf", function() {
-            const t = Object();
             const vec = new cm.DoubleVector();
             vec.push(1);
             vec.push(2);
@@ -1449,7 +1448,6 @@ module({
         });
 
         test("lastIndexOf", function() {
-            const t = Object();
             const vec = new cm.DoubleVector();
             vec.push(1);
             vec.push(2);
@@ -1461,6 +1459,19 @@ module({
             assert.equal(1, vec.lastIndexOf(2, -3));
             assert.equal(-1, vec.lastIndexOf(2, -6));
             assert.equal(-1, vec.lastIndexOf(4));
+            vec.delete();
+            assert.equal(0, cm.count_emval_handles());
+        });
+
+        test("includes", function() {
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(2);
+            vec.push(3);
+            assert.true(vec.includes(2));
+            assert.false(vec.includes(4));
+            assert.false(vec.includes(3, 3));
+            assert.true(vec.includes(3, -1));
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });

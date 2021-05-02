@@ -1783,20 +1783,20 @@ namespace emscripten {
             }
 
             static VectorArrayIterator<VectorType> entries(
-                VectorType& v
+                const VectorType& v
             ) {
                 return VectorArrayIterator<VectorType>(v, vector_array_iterator_type::ENTRIES);
             }
 
             static bool every(
-                VectorType& v,
+                const VectorType& v,
                 const val& callbackFn
             ) {
                 return every(v, callbackFn, val::undefined());
             }
 
             static bool every(
-                VectorType& v,
+                const VectorType& v,
                 const val& callbackFn,
                 const val& thisArg
             ) {
@@ -1848,14 +1848,14 @@ namespace emscripten {
             }
 
             static VectorType filter(
-                VectorType& v,
+                const VectorType& v,
                 const val& callbackFn
             ) {
                 return filter(v, callbackFn, val::undefined());
             }
 
             static VectorType filter(
-                VectorType& v,
+                const VectorType& v,
                 const val& callbackFn,
                 const val& thisArg
             ) {
@@ -1870,14 +1870,14 @@ namespace emscripten {
             }
 
             static val find(
-                VectorType& v,
+                const VectorType& v,
                 const val& callbackFn
             ) {
                 return find(v, callbackFn, val::undefined());
             }
 
             static val find(
-                VectorType& v,
+                const VectorType& v,
                 const val& callbackFn,
                 const val& thisArg
             ) {
@@ -1891,14 +1891,14 @@ namespace emscripten {
             }
 
             static ssize_t findIndex(
-                VectorType& v,
+                const VectorType& v,
                 const val& callbackFn
             ) {
                 return findIndex(v, callbackFn, val::undefined());
             }
 
             static ssize_t findIndex(
-                VectorType& v,
+                const VectorType& v,
                 const val& callbackFn,
                 const val& thisArg
             ) {
@@ -1993,20 +1993,47 @@ namespace emscripten {
             }
 
             static VectorArrayIterator<VectorType> keys(
-                VectorType& v
+                const VectorType& v
             ) {
                 return VectorArrayIterator<VectorType>(v, vector_array_iterator_type::KEYS);
             }
 
+            static ssize_t lastIndexOf(
+                const VectorType& v,
+                const typename VectorType::value_type& value
+            ) {
+                return lastIndexOf(v, value, -1);
+            }
+
+            static ssize_t lastIndexOf(
+                const VectorType& v,
+                const typename VectorType::value_type& value,
+                ssize_t start
+            ) {
+                ssize_t size = (ssize_t)v.size();
+                if (start < 0) {
+                    start += size;
+                }
+                if (start >= size) {
+                    start = size - 1;
+                }
+                for (ssize_t i = start; i >= 0; --i) {
+                    if (val(v[i]).strictlyEquals(val(value))) {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
             static val map(
-                VectorType& v,
+                const VectorType& v,
                 const val& callbackFn
             ) {
                 return map(v, callbackFn, val::undefined());
             }
 
             static val map(
-                VectorType& v,
+                const VectorType& v,
                 const val& callbackFn,
                 const val& thisArg
             ) {
@@ -2039,14 +2066,14 @@ namespace emscripten {
             }
 
             static val reduce(
-                VectorType& v,
+                const VectorType& v,
                 const val& callbackFn
             ) {
                 return reduce(v, callbackFn, val::undefined());
             }
 
             static val reduce(
-                VectorType& v,
+                const VectorType& v,
                 const val& callbackFn,
                 const val& initialValue
             ) {
@@ -2067,14 +2094,14 @@ namespace emscripten {
             }
 
             static val reduceRight(
-                VectorType& v,
+                const VectorType& v,
                 const val& callbackFn
             ) {
                 return reduceRight(v, callbackFn, val::undefined());
             }
 
             static val reduceRight(
-                VectorType& v,
+                const VectorType& v,
                 const val& callbackFn,
                 const val& initialValue
             ) {
@@ -2168,14 +2195,14 @@ namespace emscripten {
             }
 
             static bool some(
-                VectorType& v,
+                const VectorType& v,
                 const val& callbackFn
             ) {
                 return some(v, callbackFn, val::undefined());
             }
 
             static bool some(
-                VectorType& v,
+                const VectorType& v,
                 const val& callbackFn,
                 const val& thisArg
             ) {
@@ -2243,7 +2270,7 @@ namespace emscripten {
             }
 
             static VectorArrayIterator<VectorType> values(
-                VectorType& v
+                const VectorType& v
             ) {
                 return VectorArrayIterator<VectorType>(v, vector_array_iterator_type::VALUES);
             }
@@ -2271,14 +2298,14 @@ namespace emscripten {
             .function("concat", select_overload<VecType(const VecType&)>(&internal::VectorArrayAccess<VecType>::concat))
             .function("concat", select_overload<VecType(const VecType&, const VecType&)>(&internal::VectorArrayAccess<VecType>::concat))
             .function("entries", &internal::VectorArrayAccess<VecType>::entries)
-            .function("every", select_overload<bool(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::every))
-            .function("every", select_overload<bool(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::every))
-            .function("filter", select_overload<VecType(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::filter))
-            .function("filter", select_overload<VecType(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::filter))
-            .function("find", select_overload<val(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::find))
-            .function("find", select_overload<val(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::find))
-            .function("findIndex", select_overload<ssize_t(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::findIndex))
-            .function("findIndex", select_overload<ssize_t(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::findIndex))
+            .function("every", select_overload<bool(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::every))
+            .function("every", select_overload<bool(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::every))
+            .function("filter", select_overload<VecType(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::filter))
+            .function("filter", select_overload<VecType(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::filter))
+            .function("find", select_overload<val(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::find))
+            .function("find", select_overload<val(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::find))
+            .function("findIndex", select_overload<ssize_t(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::findIndex))
+            .function("findIndex", select_overload<ssize_t(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::findIndex))
             .function("fill", select_overload<VecType&(VecType&, const T&)>(&internal::VectorArrayAccess<VecType>::fill))
             .function("fill", select_overload<VecType&(VecType&, const T&, ssize_t)>(&internal::VectorArrayAccess<VecType>::fill))
             .function("fill", select_overload<VecType&(VecType&, const T&, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::fill))
@@ -2290,14 +2317,16 @@ namespace emscripten {
             .function("join", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::join))
             .function("join", select_overload<std::string(const VecType&, const std::string&)>(&internal::VectorArrayAccess<VecType>::join))
             .function("keys", &internal::VectorArrayAccess<VecType>::keys)
-            .function("map", select_overload<val(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::map))
-            .function("map", select_overload<val(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::map))
+            .function("lastIndexOf", select_overload<ssize_t(const VecType&, const T&)>(&internal::VectorArrayAccess<VecType>::lastIndexOf))
+            .function("lastIndexOf", select_overload<ssize_t(const VecType&, const T&, ssize_t)>(&internal::VectorArrayAccess<VecType>::lastIndexOf))
+            .function("map", select_overload<val(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::map))
+            .function("map", select_overload<val(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::map))
             .function("pop", &internal::VectorArrayAccess<VecType>::pop)
             .function("push", &internal::VectorArrayAccess<VecType>::push)
-            .function("reduce", select_overload<val(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::reduce))
-            .function("reduce", select_overload<val(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::reduce))
-            .function("reduceRight", select_overload<val(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::reduceRight))
-            .function("reduceRight", select_overload<val(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::reduceRight))
+            .function("reduce", select_overload<val(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::reduce))
+            .function("reduce", select_overload<val(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::reduce))
+            .function("reduceRight", select_overload<val(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::reduceRight))
+            .function("reduceRight", select_overload<val(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::reduceRight))
             .function("resize", resize)
             .function("reverse", &internal::VectorArrayAccess<VecType>::reverse)
             .function("set", &internal::VectorArrayAccess<VecType>::set)
@@ -2305,8 +2334,8 @@ namespace emscripten {
             .function("slice", select_overload<VecType(const VecType&)>(&internal::VectorArrayAccess<VecType>::slice))
             .function("slice", select_overload<VecType(const VecType&, ssize_t)>(&internal::VectorArrayAccess<VecType>::slice))
             .function("slice", select_overload<VecType(const VecType&, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::slice))
-            .function("some", select_overload<bool(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::some))
-            .function("some", select_overload<bool(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::some))
+            .function("some", select_overload<bool(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::some))
+            .function("some", select_overload<bool(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::some))
             .function("sort", select_overload<VecType&(VecType&)>(&internal::VectorArrayAccess<VecType>::sort))
             .function("sort", select_overload<VecType&(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::sort))
             .function("toString", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::join))

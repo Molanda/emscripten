@@ -1441,7 +1441,26 @@ module({
             vec.push(1);
             assert.equal(1, vec.indexOf(2));
             assert.equal(3, vec.indexOf(2, 2));
+            assert.equal(3, vec.indexOf(2, -3));
+            assert.equal(1, vec.indexOf(2, -6));
             assert.equal(-1, vec.indexOf(4));
+            vec.delete();
+            assert.equal(0, cm.count_emval_handles());
+        });
+
+        test("lastIndexOf", function() {
+            const t = Object();
+            const vec = new cm.DoubleVector();
+            vec.push(1);
+            vec.push(2);
+            vec.push(3);
+            vec.push(2);
+            vec.push(1);
+            assert.equal(3, vec.lastIndexOf(2));
+            assert.equal(1, vec.lastIndexOf(2, 2));
+            assert.equal(1, vec.lastIndexOf(2, -3));
+            assert.equal(-1, vec.lastIndexOf(2, -6));
+            assert.equal(-1, vec.lastIndexOf(4));
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });

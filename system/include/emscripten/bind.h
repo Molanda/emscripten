@@ -1765,11 +1765,7 @@ namespace emscripten {
             static VectorType concat(
                 const VectorType& v
             ) {
-                //VectorType vn; //CHAZ
-                //vn.reserve(v.size());
-                //vn.insert(vn.end(), v.begin(), v.end());
                 return VectorType(v.begin(), v.end());
-                //return vn;
             }
 
             static VectorType concat(
@@ -2015,12 +2011,12 @@ namespace emscripten {
                     }
                 }
                 val number(val::global("Number"));
-                bool isNaN = number.call<bool>("isNaN", val::undefined(), value);
+                bool isNaN = number.call<bool>("isNaN", value);
                 for (ssize_t i = start; i < size; ++i) {
                     if (val(v[i]).strictlyEquals(val(value))) {
                         return true;
                     }
-                    if (isNaN && number.call<bool>("isNaN", val::undefined(), v[i])) {
+                    if (isNaN && number.call<bool>("isNaN", v[i])) {
                         return true;
                     }
                 }
@@ -2269,10 +2265,7 @@ namespace emscripten {
                 if (end > size) {
                     end = size;
                 }
-                //VectorType vn; // CHAZ
                 if (end > start) {
-                    //vn.reserve(end - start);
-                    //vn.insert(vn.end(), v.begin() + start, v.begin() + end);
                     return VectorType(v.begin() + start, v.begin() + end);
                 }
                 return VectorType();
@@ -2342,6 +2335,17 @@ namespace emscripten {
                     return callbackFn.call<int>("call", val::undefined(), e1, e2) < 0;
                 });
                 return v;
+            }
+
+            static std::string toLocaleString(
+                const VectorType& v
+            ) {
+                val array = val::array();
+                ssize_t size = (ssize_t)v.size();
+                for (ssize_t i = 0; i < size; ++i) {
+                    array.call<void>("push", val(v[i]).call<val>("toLocaleString"));
+                }
+                return array.call<std::string>("toLocaleString");
             }
 
             static size_t unshift(
@@ -2426,6 +2430,7 @@ namespace emscripten {
             .function("some", select_overload<bool(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::some))
             .function("sort", select_overload<VecType&(VecType&)>(&internal::VectorArrayAccess<VecType>::sort))
             .function("sort", select_overload<VecType&(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::sort))
+            .function("toLocaleString", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::toLocaleString))
             .function("toString", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::join))
             .function("unshift", &internal::VectorArrayAccess<VecType>::unshift)
             .function("values", &internal::VectorArrayAccess<VecType>::values)

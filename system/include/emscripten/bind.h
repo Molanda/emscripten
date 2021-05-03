@@ -1765,10 +1765,11 @@ namespace emscripten {
             static VectorType concat(
                 const VectorType& v
             ) {
-                VectorType vn;
-                vn.reserve(v.size());
-                vn.insert(vn.end(), v.begin(), v.end());
-                return vn;
+                //VectorType vn; //CHAZ
+                //vn.reserve(v.size());
+                //vn.insert(vn.end(), v.begin(), v.end());
+                return VectorType(v.begin(), v.end());
+                //return vn;
             }
 
             static VectorType concat(
@@ -1780,6 +1781,57 @@ namespace emscripten {
                 vn.insert(vn.end(), v.begin(), v.end());
                 vn.insert(vn.end(), v0.begin(), v0.end());
                 return vn;
+            }
+
+            static VectorType& copyWithin(
+                VectorType& v,
+                ssize_t target
+            ) {
+                return copyWithin(v, target, 0, v.size());
+            }
+
+            static VectorType& copyWithin(
+                VectorType& v,
+                ssize_t target,
+                ssize_t start
+            ) {
+                return copyWithin(v, target, start, v.size());
+            }
+
+            static VectorType& copyWithin(
+                VectorType& v,
+                ssize_t target,
+                ssize_t start,
+                ssize_t end
+            ) {
+                ssize_t size = (ssize_t)v.size();
+                if (target < 0) {
+                    target += size;
+                    if (target < 0) {
+                        target = 0;
+                    }
+                }
+                if (start < 0) {
+                    start += size;
+                    if (start < 0) {
+                        start = 0;
+                    }
+                }
+                if (end < 0) {
+                    end += size;
+                }
+                if (end > size) {
+                    end = size;
+                }
+                ssize_t length = std::min(size - target, end - start);
+                if (length > 0) {
+                    if (target < start) {
+                        std::copy(v.begin() + start, v.begin() + start + length, v.begin() + target);
+                    } else if (start < target) {
+                        std::copy_backward(v.begin() + start, v.begin() + start + length, v.begin() + target + length);
+                    }
+                }
+                return v;
             }
 
             static VectorArrayIterator<VectorType> entries(
@@ -1813,7 +1865,7 @@ namespace emscripten {
                 VectorType& v,
                 const typename VectorType::value_type& value
             ) {
-                return fill(v, value, 0, -1);
+                return fill(v, value, 0, v.size());
             }
 
             static VectorType& fill(
@@ -1821,7 +1873,7 @@ namespace emscripten {
                 const typename VectorType::value_type& value,
                 ssize_t start
             ) {
-                return fill(v, value, start, -1);
+                return fill(v, value, start, v.size());
             }
 
             static VectorType& fill(
@@ -1840,10 +1892,10 @@ namespace emscripten {
                 if (end < 0) {
                     end += size;
                 }
-                if (end >= size) {
-                    end = size - 1;
+                if (end > size) {
+                    end = size;
                 }
-                std::fill(v.begin() + start, v.begin() + end + 1, value);
+                std::fill(v.begin() + start, v.begin() + end, value);
                 return v;
             }
 
@@ -2179,9 +2231,8 @@ namespace emscripten {
                 VectorType& v
             ) {
                 if (v.size() > 0) {
-                    std::rotate(v.begin(), v.begin() + 1, v.end());
-                    val e = val(v.back());
-                    v.pop_back();
+                    val e = val(v.front());
+                    v.erase(v.begin());
                     return e;
                 }
                 return val::undefined();
@@ -2218,12 +2269,13 @@ namespace emscripten {
                 if (end > size) {
                     end = size;
                 }
-                VectorType vn;
+                //VectorType vn; // CHAZ
                 if (end > start) {
-                    vn.reserve(end - start);
-                    vn.insert(vn.end(), v.begin() + start, v.begin() + end);
+                    //vn.reserve(end - start);
+                    //vn.insert(vn.end(), v.begin() + start, v.begin() + end);
+                    return VectorType(v.begin() + start, v.begin() + end);
                 }
-                return vn;
+                return VectorType();
             }
 
             static bool some(
@@ -2296,8 +2348,7 @@ namespace emscripten {
                 VectorType& v,
                 const typename VectorType::value_type& value
             ) {
-                v.push_back(value);
-                std::rotate(v.rbegin(), v.rbegin() + 1, v.rend());
+                v.insert(v.begin(), value);
                 return (size_t)v.size();
             }
 
@@ -2329,6 +2380,9 @@ namespace emscripten {
             .property("length", length)
             .function("concat", select_overload<VecType(const VecType&)>(&internal::VectorArrayAccess<VecType>::concat))
             .function("concat", select_overload<VecType(const VecType&, const VecType&)>(&internal::VectorArrayAccess<VecType>::concat))
+            .function("copyWithin", select_overload<VecType&(VecType&, ssize_t)>(&internal::VectorArrayAccess<VecType>::copyWithin))
+            .function("copyWithin", select_overload<VecType&(VecType&, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::copyWithin))
+            .function("copyWithin", select_overload<VecType&(VecType&, ssize_t, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::copyWithin))
             .function("entries", &internal::VectorArrayAccess<VecType>::entries)
             .function("every", select_overload<bool(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::every))
             .function("every", select_overload<bool(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::every))

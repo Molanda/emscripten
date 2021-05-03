@@ -1174,6 +1174,7 @@ module({
             assert.equal(4, vec.pop());
             assert.equal(2, vec.shift());
             assert.equal(3, vec.pop());
+            assert.equal(0, vec.length);
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
          });
@@ -1183,23 +1184,24 @@ module({
             vec.push(1);
             vec.push(2);
             vec.push(3);
-            vec.push(4);
-            assert.equal("1,2,3,4", vec.join());
-            assert.equal("1+2+3+4", vec.join("+"));
-            assert.equal("1,2,3,4", vec.toString());
+            assert.equal("1,2,3", vec.join());
+            assert.equal("1+2+3", vec.join("+"));
+            assert.equal("1,2,3", vec.toString());
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });
 
         test("fill", function() {
             const vec = new cm.DoubleVector();
-            vec.resize(4, 0);
-            assert.equal("1,1,1,1", vec.fill(1).toString());
-            assert.equal("1,1,1,1", vec.toString());
-            vec.fill(2, 1);
-            assert.equal("1,2,2,2", vec.toString());
-            vec.fill(3, -3, -2);
-            assert.equal("1,3,3,2", vec.toString());
+            vec.resize(3, 0);
+            assert.equal("1,1,1", vec.fill(1).toString());
+            assert.equal("1,2,2", vec.fill(2, 1).toString());
+            assert.equal("1,3,2", vec.fill(3, 1, 2).toString());
+            assert.equal("1,3,2", vec.fill(4, 1, 1).toString());
+            assert.equal("1,3,2", vec.fill(5, 3, 3).toString());
+            assert.equal("6,3,2", vec.fill(6, -3, -2).toString());
+            assert.equal("6,3,2", vec.fill(7, 3, 5).toString());
+            assert.equal("6,3,2", vec.toString());
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });
@@ -1209,10 +1211,9 @@ module({
             vec.push(1);
             vec.push(2);
             vec.push(3);
-            vec.push(4);
-            assert.equal("1,2,3,4", vec.toString());
-            assert.equal("4,3,2,1", vec.reverse().toString());
-            assert.equal("4,3,2,1", vec.toString());
+            assert.equal("1,2,3", vec.toString());
+            assert.equal("3,2,1", vec.reverse().toString());
+            assert.equal("3,2,1", vec.toString());
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });
@@ -1237,6 +1238,30 @@ module({
             assert.equal(0, cm.count_emval_handles());
         });
 
+        test("copyWithin", function() {
+            const vec1 = new cm.DoubleVector();
+            vec1.push(1);
+            vec1.push(2);
+            vec1.push(3);
+            vec1.push(4);
+            vec1.push(5);
+            const vec2 = vec1.concat();
+            assert.equal("1,2,3,1,2", vec2.copyWithin(-2).toString());
+            const vec3 = vec1.concat();
+            assert.equal("4,5,3,4,5", vec3.copyWithin(0, 3).toString());
+            const vec4 = vec1.concat();
+            assert.equal("4,2,3,4,5", vec4.copyWithin(0, 3, 4).toString());
+            const vec5 = vec1.concat();
+            assert.equal("1,2,3,3,4", vec5.copyWithin(-2, -3, -1).toString());
+            assert.equal("1,2,3,3,4", vec5.toString());
+            vec1.delete();
+            vec2.delete();
+            vec3.delete();
+            vec4.delete();
+            vec5.delete();
+            assert.equal(0, cm.count_emval_handles());
+        });
+
         test("slice", function() {
             const vec1 = new cm.DoubleVector();
             vec1.push(1);
@@ -1248,15 +1273,18 @@ module({
             assert.equal("3,4,5", vec2.toString());
             const vec3 = vec1.slice(2, 4);
             assert.equal("3,4", vec3.toString());
-            const vec4 = vec1.slice(-2);
-            assert.equal("4,5", vec4.toString());
-            const vec5 = vec1.slice(2, -1);
-            assert.equal("3,4", vec5.toString());
+            const vec4 = vec1.slice(1, 5);
+            assert.equal("2,3,4,5", vec4.toString());
+            const vec5 = vec1.slice(-2);
+            assert.equal("4,5", vec5.toString());
+            const vec6 = vec1.slice(2, -1);
+            assert.equal("3,4", vec6.toString());
             vec1.delete();
             vec2.delete();
             vec3.delete();
             vec4.delete();
             vec5.delete();
+            vec6.delete();
             assert.equal(0, cm.count_emval_handles());
         });
 

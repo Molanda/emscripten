@@ -1386,39 +1386,79 @@ module({
 
         test("entries", function() {
             const vec = cm.DoubleVector.from([1, 2, 3]);
-            const it = vec.entries();
-            [[[0, 1], false], [[1, 2], false], [[2, 3], false], [undefined, true]].forEach(e => {
-                const v = it.next();
-                assert.deepEqual(e[0], v.value);
-                assert.equal(e[1], v.done);
-            });
-            it.delete();
+            {
+                const it = vec.entries();
+                [[[0, 1], false], [[1, 2], false], [[2, 3], false], [undefined, true]].forEach(e => {
+                    const v = it.next();
+                    assert.deepEqual(e[0], v.value);
+                    assert.equal(e[1], v.done);
+                });
+                it.delete();
+            }
+            {
+                const expectedList = [[0, 1], [1, 2], [2, 3], 0];
+                for (const [i, e] of vec.entries()) {
+                    const expectedValues = expectedList.shift();
+                    assert.equal(expectedValues[0], i);
+                    assert.equal(expectedValues[1], e);
+                }
+                assert.equal(1, expectedList.length);
+            }
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });
 
         test("keys", function() {
             const vec = cm.DoubleVector.from([1, 2, 3]);
-            const it = vec.keys();
-            [[0, false], [1, false], [2, false], [undefined, true]].forEach(e => {
-                const v = it.next();
-                assert.equal(e[0], v.value);
-                assert.equal(e[1], v.done);
-            });
-            it.delete();
+            {
+                const it = vec.keys();
+                [[0, false], [1, false], [2, false], [undefined, true]].forEach(e => {
+                    const v = it.next();
+                    assert.equal(e[0], v.value);
+                    assert.equal(e[1], v.done);
+                });
+                it.delete();
+            }
+            {
+                const expectedList = [0, 1, 2, 0];
+                for (const e of vec.keys()) {
+                    assert.equal(expectedList.shift(), e);
+                }
+                assert.equal(1, expectedList.length);
+            }
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });
 
         test("values", function() {
             const vec = cm.DoubleVector.from([1, 2, 3]);
-            const it = vec.values();
-            [[1, false], [2, false], [3, false], [undefined, true]].forEach(e => {
-                const v = it.next();
-                assert.equal(e[0], v.value);
-                assert.equal(e[1], v.done);
-            });
-            it.delete();
+            {
+                const it = vec.values();
+                [[1, false], [2, false], [3, false], [undefined, true]].forEach(e => {
+                    const v = it.next();
+                    assert.equal(e[0], v.value);
+                    assert.equal(e[1], v.done);
+                });
+                it.delete();
+            }
+            {
+                const expectedList = [1, 2, 3, 0];
+                for (const e of vec.values()) {
+                    assert.equal(expectedList.shift(), e);
+                }
+                assert.equal(1, expectedList.length);
+            }
+            vec.delete();
+            assert.equal(0, cm.count_emval_handles());
+        });
+
+        test("iterator", function() {
+            const vec = cm.DoubleVector.from([1, 2, 3]);
+            const expectedList = [1, 2, 3, 0];
+            for (const e of vec) {
+                assert.equal(expectedList.shift(), e);
+            }
+            assert.equal(1, expectedList.length);
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
         });

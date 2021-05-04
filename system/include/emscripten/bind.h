@@ -1754,6 +1754,10 @@ namespace emscripten {
                 return vav;
             }
 
+            VectorArrayIterator<VectorType>& iterator() {
+                return *this;
+            }
+
         private:
             const VectorType* vp;
             ssize_t index;
@@ -2450,6 +2454,7 @@ namespace emscripten {
 
         class_<VectorArrayIterator<VecType>>(iterName)
             .function("next", &VectorArrayIterator<VecType>::next)
+            .function("@@iterator", &VectorArrayIterator<VecType>::iterator)
             ;
 
         return class_<VecType>(vecName)
@@ -2513,6 +2518,7 @@ namespace emscripten {
             .function("toString", select_overload<std::string(const VecType&)>(&VectorArrayAccess<VecType>::join))
             .function("unshift", &VectorArrayAccess<VecType>::unshift)
             .function("values", &VectorArrayAccess<VecType>::values)
+            .function("@@iterator", &VectorArrayAccess<VecType>::values)
             ;
     }
 

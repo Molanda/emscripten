@@ -1702,7 +1702,7 @@ namespace emscripten {
     };
 
     ////////////////////////////////////////////////////////////////////////////////
-    // VECTORS
+    // VECTORS (JavaScript Array style API)
     ////////////////////////////////////////////////////////////////////////////////
 
     namespace internal {
@@ -2366,79 +2366,78 @@ namespace emscripten {
 
     template<typename T>
     class_<std::vector<T>> vector(const char* vecName, const char* iterName, const char* valName) {
+        using namespace internal;
         typedef std::vector<T> VecType;
 
-        value_object<internal::VectorArrayValue<VecType>>(valName)
-            .field("value", &internal::VectorArrayValue<VecType>::value)
-            .field("done", &internal::VectorArrayValue<VecType>::done)
+        value_object<VectorArrayValue<VecType>>(valName)
+            .field("value", &VectorArrayValue<VecType>::value)
+            .field("done", &VectorArrayValue<VecType>::done)
             ;
 
-        class_<internal::VectorArrayIterator<VecType>>(iterName)
-            .function("next", &internal::VectorArrayIterator<VecType>::next)
+        class_<VectorArrayIterator<VecType>>(iterName)
+            .function("next", &VectorArrayIterator<VecType>::next)
             ;
 
-        size_t (VecType::*length)() const = &VecType::size;
-        void (VecType::*resize)(const size_t, const T&) = &VecType::resize;
         return class_<VecType>(vecName)
             .template constructor<>()
-            .property("length", length)
-            .function("concat", select_overload<VecType(const VecType&)>(&internal::VectorArrayAccess<VecType>::concat))
-            .function("concat", select_overload<VecType(const VecType&, const VecType&)>(&internal::VectorArrayAccess<VecType>::concat))
-            .function("copyWithin", select_overload<VecType&(VecType&, ssize_t)>(&internal::VectorArrayAccess<VecType>::copyWithin))
-            .function("copyWithin", select_overload<VecType&(VecType&, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::copyWithin))
-            .function("copyWithin", select_overload<VecType&(VecType&, ssize_t, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::copyWithin))
-            .function("entries", &internal::VectorArrayAccess<VecType>::entries)
-            .function("every", select_overload<bool(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::every))
-            .function("every", select_overload<bool(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::every))
-            .function("filter", select_overload<VecType(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::filter))
-            .function("filter", select_overload<VecType(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::filter))
-            .function("find", select_overload<val(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::find))
-            .function("find", select_overload<val(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::find))
-            .function("findIndex", select_overload<ssize_t(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::findIndex))
-            .function("findIndex", select_overload<ssize_t(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::findIndex))
-            .function("fill", select_overload<VecType&(VecType&, const T&)>(&internal::VectorArrayAccess<VecType>::fill))
-            .function("fill", select_overload<VecType&(VecType&, const T&, ssize_t)>(&internal::VectorArrayAccess<VecType>::fill))
-            .function("fill", select_overload<VecType&(VecType&, const T&, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::fill))
-            .function("forEach", select_overload<void(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::forEach))
-            .function("forEach", select_overload<void(VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::forEach))
-            .function("get", &internal::VectorArrayAccess<VecType>::get)
-            .function("includes", select_overload<bool(const VecType&, const T&)>(&internal::VectorArrayAccess<VecType>::includes))
-            .function("includes", select_overload<bool(const VecType&, const T&, ssize_t)>(&internal::VectorArrayAccess<VecType>::includes))
-            .function("indexOf", select_overload<ssize_t(const VecType&, const T&)>(&internal::VectorArrayAccess<VecType>::indexOf))
-            .function("indexOf", select_overload<ssize_t(const VecType&, const T&, ssize_t)>(&internal::VectorArrayAccess<VecType>::indexOf))
-            .function("join", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::join))
-            .function("join", select_overload<std::string(const VecType&, const std::string&)>(&internal::VectorArrayAccess<VecType>::join))
-            .function("keys", &internal::VectorArrayAccess<VecType>::keys)
-            .function("lastIndexOf", select_overload<ssize_t(const VecType&, const T&)>(&internal::VectorArrayAccess<VecType>::lastIndexOf))
-            .function("lastIndexOf", select_overload<ssize_t(const VecType&, const T&, ssize_t)>(&internal::VectorArrayAccess<VecType>::lastIndexOf))
-            .function("map", select_overload<val(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::map))
-            .function("map", select_overload<val(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::map))
-            .function("pop", &internal::VectorArrayAccess<VecType>::pop)
-            .function("push", &internal::VectorArrayAccess<VecType>::push)
-            .function("reduce", select_overload<val(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::reduce))
-            .function("reduce", select_overload<val(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::reduce))
-            .function("reduceRight", select_overload<val(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::reduceRight))
-            .function("reduceRight", select_overload<val(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::reduceRight))
-            .function("resize", resize)
-            .function("reverse", &internal::VectorArrayAccess<VecType>::reverse)
-            .function("set", &internal::VectorArrayAccess<VecType>::set)
-            .function("shift", &internal::VectorArrayAccess<VecType>::shift)
-            .function("slice", select_overload<VecType(const VecType&)>(&internal::VectorArrayAccess<VecType>::slice))
-            .function("slice", select_overload<VecType(const VecType&, ssize_t)>(&internal::VectorArrayAccess<VecType>::slice))
-            .function("slice", select_overload<VecType(const VecType&, ssize_t, ssize_t)>(&internal::VectorArrayAccess<VecType>::slice))
-            .function("some", select_overload<bool(const VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::some))
-            .function("some", select_overload<bool(const VecType&, const val&, const val&)>(&internal::VectorArrayAccess<VecType>::some))
-            .function("sort", select_overload<VecType&(VecType&)>(&internal::VectorArrayAccess<VecType>::sort))
-            .function("sort", select_overload<VecType&(VecType&, const val&)>(&internal::VectorArrayAccess<VecType>::sort))
-            .function("toLocaleString", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::toLocaleString))
-            .function("toString", select_overload<std::string(const VecType&)>(&internal::VectorArrayAccess<VecType>::join))
-            .function("unshift", &internal::VectorArrayAccess<VecType>::unshift)
-            .function("values", &internal::VectorArrayAccess<VecType>::values)
+            .property("length", &VecType::size)
+            .function("concat", select_overload<VecType(const VecType&)>(&VectorArrayAccess<VecType>::concat))
+            .function("concat", select_overload<VecType(const VecType&, const VecType&)>(&VectorArrayAccess<VecType>::concat))
+            .function("copyWithin", select_overload<VecType&(VecType&, ssize_t)>(&VectorArrayAccess<VecType>::copyWithin))
+            .function("copyWithin", select_overload<VecType&(VecType&, ssize_t, ssize_t)>(&VectorArrayAccess<VecType>::copyWithin))
+            .function("copyWithin", select_overload<VecType&(VecType&, ssize_t, ssize_t, ssize_t)>(&VectorArrayAccess<VecType>::copyWithin))
+            .function("entries", &VectorArrayAccess<VecType>::entries)
+            .function("every", select_overload<bool(const VecType&, const val&)>(&VectorArrayAccess<VecType>::every))
+            .function("every", select_overload<bool(const VecType&, const val&, const val&)>(&VectorArrayAccess<VecType>::every))
+            .function("filter", select_overload<VecType(const VecType&, const val&)>(&VectorArrayAccess<VecType>::filter))
+            .function("filter", select_overload<VecType(const VecType&, const val&, const val&)>(&VectorArrayAccess<VecType>::filter))
+            .function("find", select_overload<val(const VecType&, const val&)>(&VectorArrayAccess<VecType>::find))
+            .function("find", select_overload<val(const VecType&, const val&, const val&)>(&VectorArrayAccess<VecType>::find))
+            .function("findIndex", select_overload<ssize_t(const VecType&, const val&)>(&VectorArrayAccess<VecType>::findIndex))
+            .function("findIndex", select_overload<ssize_t(const VecType&, const val&, const val&)>(&VectorArrayAccess<VecType>::findIndex))
+            .function("fill", select_overload<VecType&(VecType&, const T&)>(&VectorArrayAccess<VecType>::fill))
+            .function("fill", select_overload<VecType&(VecType&, const T&, ssize_t)>(&VectorArrayAccess<VecType>::fill))
+            .function("fill", select_overload<VecType&(VecType&, const T&, ssize_t, ssize_t)>(&VectorArrayAccess<VecType>::fill))
+            .function("forEach", select_overload<void(VecType&, const val&)>(&VectorArrayAccess<VecType>::forEach))
+            .function("forEach", select_overload<void(VecType&, const val&, const val&)>(&VectorArrayAccess<VecType>::forEach))
+            .function("get", &VectorArrayAccess<VecType>::get)
+            .function("includes", select_overload<bool(const VecType&, const T&)>(&VectorArrayAccess<VecType>::includes))
+            .function("includes", select_overload<bool(const VecType&, const T&, ssize_t)>(&VectorArrayAccess<VecType>::includes))
+            .function("indexOf", select_overload<ssize_t(const VecType&, const T&)>(&VectorArrayAccess<VecType>::indexOf))
+            .function("indexOf", select_overload<ssize_t(const VecType&, const T&, ssize_t)>(&VectorArrayAccess<VecType>::indexOf))
+            .function("join", select_overload<std::string(const VecType&)>(&VectorArrayAccess<VecType>::join))
+            .function("join", select_overload<std::string(const VecType&, const std::string&)>(&VectorArrayAccess<VecType>::join))
+            .function("keys", &VectorArrayAccess<VecType>::keys)
+            .function("lastIndexOf", select_overload<ssize_t(const VecType&, const T&)>(&VectorArrayAccess<VecType>::lastIndexOf))
+            .function("lastIndexOf", select_overload<ssize_t(const VecType&, const T&, ssize_t)>(&VectorArrayAccess<VecType>::lastIndexOf))
+            .function("map", select_overload<val(const VecType&, const val&)>(&VectorArrayAccess<VecType>::map))
+            .function("map", select_overload<val(const VecType&, const val&, const val&)>(&VectorArrayAccess<VecType>::map))
+            .function("pop", &VectorArrayAccess<VecType>::pop)
+            .function("push", &VectorArrayAccess<VecType>::push)
+            .function("reduce", select_overload<val(const VecType&, const val&)>(&VectorArrayAccess<VecType>::reduce))
+            .function("reduce", select_overload<val(const VecType&, const val&, const val&)>(&VectorArrayAccess<VecType>::reduce))
+            .function("reduceRight", select_overload<val(const VecType&, const val&)>(&VectorArrayAccess<VecType>::reduceRight))
+            .function("reduceRight", select_overload<val(const VecType&, const val&, const val&)>(&VectorArrayAccess<VecType>::reduceRight))
+            .function("resize", select_overload<void(const size_t, const T&)>(&VecType::resize))
+            .function("reverse", &VectorArrayAccess<VecType>::reverse)
+            .function("set", &VectorArrayAccess<VecType>::set)
+            .function("shift", &VectorArrayAccess<VecType>::shift)
+            .function("slice", select_overload<VecType(const VecType&)>(&VectorArrayAccess<VecType>::slice))
+            .function("slice", select_overload<VecType(const VecType&, ssize_t)>(&VectorArrayAccess<VecType>::slice))
+            .function("slice", select_overload<VecType(const VecType&, ssize_t, ssize_t)>(&VectorArrayAccess<VecType>::slice))
+            .function("some", select_overload<bool(const VecType&, const val&)>(&VectorArrayAccess<VecType>::some))
+            .function("some", select_overload<bool(const VecType&, const val&, const val&)>(&VectorArrayAccess<VecType>::some))
+            .function("sort", select_overload<VecType&(VecType&)>(&VectorArrayAccess<VecType>::sort))
+            .function("sort", select_overload<VecType&(VecType&, const val&)>(&VectorArrayAccess<VecType>::sort))
+            .function("toLocaleString", select_overload<std::string(const VecType&)>(&VectorArrayAccess<VecType>::toLocaleString))
+            .function("toString", select_overload<std::string(const VecType&)>(&VectorArrayAccess<VecType>::join))
+            .function("unshift", &VectorArrayAccess<VecType>::unshift)
+            .function("values", &VectorArrayAccess<VecType>::values)
             ;
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    // VECTORS
+    // VECTORS (std::vector style API)
     ////////////////////////////////////////////////////////////////////////////////
 
     namespace internal {

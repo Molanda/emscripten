@@ -1190,10 +1190,12 @@ module({
             }
             {
                 const t = Object();
-                const vec = cm.DoubleVector.from('123', function(e, i, a) {
+                const vec = cm.DoubleVector.from('123', function(e, i) {
+                    // The syntax and polyfill disagree about the parameters here,
+                    // but the actual implementation for Array only includes the
+                    // element and index.
                     assert.equal("string", typeof e);
                     assert.equal("number", typeof i);
-                    assert.equal(e, a[i]);
                     assert.true(t === this);
                     return Number(e);
                 }, t);

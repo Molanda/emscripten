@@ -1782,7 +1782,7 @@ namespace emscripten {
                 VectorType vn;
                 vn.reserve(size);
                 for (ssize_t i = 0; i < size; ++i) {
-                    val entry = callbackFn.call<val>("call", thisArg, array[i], i, array);
+                    val entry = callbackFn.call<val>("call", thisArg, array[i], i);
                     vn.push_back(entry.as<typename VectorType::value_type>());
                 }
                 return vn;

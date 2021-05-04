@@ -1141,25 +1141,6 @@ module({
             return vec;
         };
 
-        cm.DoubleVector.prototype.splice = function(s, d, e) {
-            const array = this.map(function(e) {
-                return e;
-            });
-            var deleted;
-            if (typeof d === "undefined") {
-                deleted = cm.DoubleVector.from(array.splice(s));
-            } else if (typeof e === "undefined") {
-                deleted = cm.DoubleVector.from(array.splice(s, d));
-            } else {
-                deleted = cm.DoubleVector.from(array.splice(s, d, e));
-            }
-            this.resize(0, 0);
-            array.forEach(function(e) {
-                this.push(e);
-            }, this);
-            return deleted;
-        };
-
         test("length and resize", function() {
             const vec = new cm.DoubleVector();
             assert.equal(0, vec.length);

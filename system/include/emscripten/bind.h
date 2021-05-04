@@ -2337,6 +2337,58 @@ namespace emscripten {
                 return v;
             }
 
+            static VectorType splice(
+                VectorType& v,
+                ssize_t start
+            ) {
+                return splice(v, start, (ssize_t)v.size());
+            }
+
+            static VectorType splice(
+                VectorType& v,
+                ssize_t start,
+                ssize_t deleteCount
+            ) {
+                ssize_t size = (ssize_t)v.size();
+                if (start < 0) {
+                    start += size;
+                    if (start < 0) {
+                        start = 0;
+                    }
+                }
+                if (start > size) {
+                    start = size;
+                }
+                deleteCount = std::min(deleteCount, size - start);
+                VectorType vn;
+                if (deleteCount > 0) {
+                    vn.insert(vn.end(), v.begin() + start, v.begin() + start + deleteCount);
+                    v.erase(v.begin() + start, v.begin() + start + deleteCount);
+                }
+                return vn;
+            }
+
+            static VectorType splice(
+                VectorType& v,
+                ssize_t start,
+                ssize_t deleteCount,
+                const typename VectorType::value_type& value
+            ) {
+                ssize_t size = (ssize_t)v.size();
+                if (start < 0) {
+                    start += size;
+                    if (start < 0) {
+                        start = 0;
+                    }
+                }
+                if (start > size) {
+                    start = size;
+                }
+                VectorType vn = splice(v, start, deleteCount);
+                v.insert(v.begin() + start, value);
+                return vn;
+            }
+
             static std::string toLocaleString(
                 const VectorType& v
             ) {
@@ -2429,6 +2481,9 @@ namespace emscripten {
             .function("some", select_overload<bool(const VecType&, const val&, const val&)>(&VectorArrayAccess<VecType>::some))
             .function("sort", select_overload<VecType&(VecType&)>(&VectorArrayAccess<VecType>::sort))
             .function("sort", select_overload<VecType&(VecType&, const val&)>(&VectorArrayAccess<VecType>::sort))
+            .function("splice", select_overload<VecType(VecType&, ssize_t)>(&VectorArrayAccess<VecType>::splice))
+            .function("splice", select_overload<VecType(VecType&, ssize_t, ssize_t)>(&VectorArrayAccess<VecType>::splice))
+            .function("splice", select_overload<VecType(VecType&, ssize_t, ssize_t, const T&)>(&VectorArrayAccess<VecType>::splice))
             .function("toLocaleString", select_overload<std::string(const VecType&)>(&VectorArrayAccess<VecType>::toLocaleString))
             .function("toString", select_overload<std::string(const VecType&)>(&VectorArrayAccess<VecType>::join))
             .function("unshift", &VectorArrayAccess<VecType>::unshift)

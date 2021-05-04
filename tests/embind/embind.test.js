@@ -1133,14 +1133,6 @@ module({
     });
 
     BaseFixture.extend("vector_as_array", function() {
-        cm.DoubleVector.from = function(array) {
-            const vec = new cm.DoubleVector();
-            array.forEach(function(e) {
-                vec.push(e);
-            });
-            return vec;
-        };
-
         test("length and resize", function() {
             const vec = new cm.DoubleVector();
             assert.equal(0, vec.length);
@@ -1185,7 +1177,34 @@ module({
             assert.equal(0, vec.length);
             vec.delete();
             assert.equal(0, cm.count_emval_handles());
-         });
+        });
+
+        test("from", function() {
+            {
+                const vec = cm.DoubleVector.from([1, 2, 3]);
+                assert.equal(3, vec.length);
+                assert.equal(1, vec.get(0));
+                assert.equal(2, vec.get(1));
+                assert.equal(3, vec.get(2));
+                vec.delete();
+            }
+            {
+                const t = Object();
+                const vec = cm.DoubleVector.from('123', function(e, i, a) {
+                    assert.equal("string", typeof e);
+                    assert.equal("number", typeof i);
+                    assert.equal(e, a[i]);
+                    assert.true(t === this);
+                    return Number(e);
+                }, t);
+                assert.equal(3, vec.length);
+                assert.equal(1, vec.get(0));
+                assert.equal(2, vec.get(1));
+                assert.equal(3, vec.get(2));
+                vec.delete();
+            }
+            assert.equal(0, cm.count_emval_handles());
+        });
 
         test("join", function() {
             const vec = cm.DoubleVector.from([1, 2, 3]);

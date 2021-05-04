@@ -1762,6 +1762,28 @@ namespace emscripten {
 
         template<typename VectorType>
         struct VectorArrayAccess {
+            static VectorType from(
+                const val& array,
+                const val& callbackFn
+            ) {
+                return from(array, callbackFn, val::undefined());
+            }
+
+            static VectorType from(
+                const val& array,
+                const val& callbackFn,
+                const val& thisArg
+            ) {
+                ssize_t size = array["length"].as<ssize_t>();
+                VectorType vn;
+                vn.reserve(size);
+                for (ssize_t i = 0; i < size; ++i) {
+                    val entry = callbackFn.call<val>("call", thisArg, array[i], i, array);
+                    vn.push_back(entry.as<typename VectorType::value_type>());
+                }
+                return vn;
+            }
+
             static VectorType concat(
                 const VectorType& v
             ) {
@@ -2433,6 +2455,9 @@ namespace emscripten {
         return class_<VecType>(vecName)
             .template constructor<>()
             .property("length", &VecType::size)
+            .class_function("from", select_overload<VecType(const val&)>(&vecFromJSArray))
+            .class_function("from", select_overload<VecType(const val&, const val&)>(&VectorArrayAccess<VecType>::from))
+            .class_function("from", select_overload<VecType(const val&, const val&, const val&)>(&VectorArrayAccess<VecType>::from))
             .function("concat", select_overload<VecType(const VecType&)>(&VectorArrayAccess<VecType>::concat))
             .function("concat", select_overload<VecType(const VecType&, const VecType&)>(&VectorArrayAccess<VecType>::concat))
             .function("copyWithin", select_overload<VecType&(VecType&, ssize_t)>(&VectorArrayAccess<VecType>::copyWithin))
